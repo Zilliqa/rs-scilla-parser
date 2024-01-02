@@ -1,11 +1,11 @@
 [package]
 name = "scilla-parser"
-version = "0.10.0"
+version = "0.11.0"
 edition = "2021"
 description = "Scilla smart contract parser written in Rust"
 license = "MIT"
 authors = ["Saeed dadkhah", "Saeed Dadkhah <saeed@zilliqa.com>"]
-repository = "https://github.com/its-saeed/scilla-parser"
+repository = "https://github.com/Zilliqa/rs-scilla-parser/"
 documentation = "https://docs.rs/scilla-parser"
 
 [dependencies]
