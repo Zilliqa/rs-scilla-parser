@@ -10,7 +10,7 @@ fn test_parse() -> Result<(), Box<dyn Error>> {
         let path = entry.path();
         if path.is_file() {
             println!("Parsing {}", path.display());
-            Contract::from_path(&path)?;
+            Contract::parse(&path)?;
         }
     }
     Ok(())
@@ -19,7 +19,7 @@ fn test_parse() -> Result<(), Box<dyn Error>> {
 #[test]
 fn test_chain_id_contract_parse() {
     let contract_path = PathBuf::from("tests/contracts/chainid.scilla");
-    let contract = Contract::from_path(&contract_path).unwrap();
+    let contract = Contract::parse(&contract_path).unwrap();
 
     assert_eq!(
         contract,
@@ -38,7 +38,7 @@ fn test_chain_id_contract_parse() {
 #[test]
 fn test_hello_world_contract_parse() {
     let contract_path = PathBuf::from("tests/contracts/HelloWorld.scilla");
-    let contract = Contract::from_path(&contract_path).unwrap();
+    let contract = Contract::parse(&contract_path).unwrap();
 
     assert_eq!(
         contract,
@@ -57,7 +57,7 @@ fn test_hello_world_contract_parse() {
 #[test]
 fn test_send_zil_contract_parse() {
     let contract_path = PathBuf::from("tests/contracts/SendZil.scilla");
-    let contract = Contract::from_path(&contract_path).unwrap();
+    let contract = Contract::parse(&contract_path).unwrap();
 
     assert_eq!(
         contract,
@@ -119,7 +119,7 @@ fn test_send_zil_contract_parse() {
 #[test]
 fn test_timestamp_contract_parse() {
     let contract_path = PathBuf::from("tests/contracts/Timestamp.scilla");
-    let contract = Contract::from_path(&contract_path).unwrap();
+    let contract = Contract::parse(&contract_path).unwrap();
 
     assert_eq!(
         contract,
@@ -138,7 +138,7 @@ fn test_timestamp_contract_parse() {
 #[test]
 fn test_fungible_token_parse() {
     let contract_path = PathBuf::from("tests/contracts/FungibleToken.scilla");
-    let contract = Contract::from_path(&contract_path).unwrap();
+    let contract = Contract::parse(&contract_path).unwrap();
     assert_eq!(
         contract,
         Contract {
@@ -212,7 +212,7 @@ fn test_fungible_token_parse() {
 #[test]
 fn test_staking_proxy_v2_parse() {
     let contract_path = PathBuf::from("tests/contracts/staking_proxy_v2.scilla");
-    let contract = Contract::from_path(&contract_path).unwrap();
+    let contract = Contract::parse(&contract_path).unwrap();
     assert_eq!(
         contract,
         Contract {
@@ -509,7 +509,7 @@ fn test_staking_proxy_v2_parse() {
 #[test]
 fn test_stzil_contract_parse() {
     let contract_path = PathBuf::from("tests/contracts/stzil.scilla");
-    let contract = Contract::from_path(&contract_path).unwrap();
+    let contract = Contract::parse(&contract_path).unwrap();
 
     assert_eq!(
         contract,

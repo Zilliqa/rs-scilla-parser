@@ -1,6 +1,10 @@
 use std::{path::Path, str::FromStr};
 
-use crate::{run_scilla_fmt, Error, FieldList, TransitionList};
+use crate::{
+    ast::nodes::{NodeContractDefinition, WithMetaData},
+    parser::{lexer::Lexer, parser},
+    run_scilla_fmt, Error, FieldList, TransitionList,
+};
 
 #[derive(Debug, PartialEq)]
 /// The `Contract` struct represents a parsed contract in Rust, including its name, initialization
@@ -40,19 +44,26 @@ impl FromStr for Contract {
     ///     }
     /// );
     /// ```
-    fn from_str(sexp: &str) -> Result<Self, Self::Err> {
-        // Bug in lexpr crate requires escaping backslashes
-        let v = lexpr::from_str(&sexp.replace("\\", ""))?;
-        let name = v["contr"][0]["cname"]["Ident"][0][1].to_string();
-        let transitions = (&v["contr"][0]["ccomps"][0]).try_into()?;
-        let init_params = (&v["contr"][0]["cparams"][0]).try_into()?;
-        let fields = (&v["contr"][0]["cfields"][0]).try_into()?;
-        Ok(Contract {
-            name,
-            transitions,
-            init_params,
-            fields,
-        })
+    fn from_str(contract: &str) -> Result<Self, Self::Err> {
+        let mut errors = vec![];
+        Ok(parser::ProgramParser::new()
+            .parse(&mut errors, Lexer::new(&contract))?
+            .contract_definition
+            .into())
+        // println!("{contract:?}");
+        // // todo!()
+        // // Bug in lexpr crate requires escaping backslashes
+        // let v = lexpr::from_str(&sexp.replace("\\", ""))?;
+        // let name = v["contr"][0]["cname"]["Ident"][0][1].to_string();
+        // let transitions = (&v["contr"][0]["ccomps"][0]).try_into()?;
+        // let init_params = (&v["contr"][0]["cparams"][0]).try_into()?;
+        // let fields = (&v["contr"][0]["cfields"][0]).try_into()?;
+        // Ok(Contract {
+        //     name,
+        //     transitions,
+        //     init_params,
+        //     fields,
+        // })
     }
 }
 
@@ -79,7 +90,15 @@ impl Contract {
     ///     }
     /// );
     /// ```
-    pub fn from_path(contract_path: &Path) -> Result<Self, Error> {
-        run_scilla_fmt(contract_path)?.parse()
+    pub fn parse(contract_path: &Path) -> Result<Self, Error> {
+        // run_scilla_fmt(contract_path)?.parse();
+        std::fs::read_to_string(contract_path)?.parse()
+    }
+}
+
+impl From<WithMetaData<NodeContractDefinition>> for Contract {
+    fn from(contract_definition: WithMetaData<NodeContractDefinition>) -> Self {
+        println!("{contract_definition:#?}");
+        todo!()
     }
 }
