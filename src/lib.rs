@@ -1,6 +1,8 @@
+pub mod ast;
 pub mod contract;
 pub mod error;
 pub mod field;
+pub mod parser;
 pub mod transition;
 pub mod r#type;
 
