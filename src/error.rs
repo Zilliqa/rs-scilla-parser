@@ -15,6 +15,9 @@ pub enum Error {
     #[error("Comptype is not transition. It's {0}")]
     CompTypeIsNotTransition(String),
 
+    #[error("Failed to visit AST {0}")]
+    AstVisitError(String),
+
     #[error(transparent)]
     IoError(#[from] std::io::Error),
 
