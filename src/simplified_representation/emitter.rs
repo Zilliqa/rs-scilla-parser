@@ -168,7 +168,7 @@ impl AstConverting for SrEmitter {
         _mode: TreeTraversalMode,
         _node: &NodeByteStr,
     ) -> Result<TraversalResult, String> {
-        unimplemented!();
+        Ok(TraversalResult::Continue)
     }
     fn emit_type_name_identifier(
         &mut self,
