@@ -52,7 +52,7 @@ impl fmt::Display for NodeByteStr {
 pub enum NodeTypeNameIdentifier {
     /// Represents a byte string type
     /// Example: `let x: ByStr = "type";`
-    ByteStringType(WithMetaData<NodeByteStr>),
+    ByteStringType(NodeByteStr),
     /// Represents an event type
     /// Example: `event e;`
     EventType,
@@ -66,7 +66,7 @@ impl NodeTypeNameIdentifier {
     pub fn to_string(&self) -> String {
         match self {
             NodeTypeNameIdentifier::ByteStringType(byte_str) => {
-                format!("{}", byte_str.node.to_string())
+                format!("{}", byte_str.to_string())
             }
             NodeTypeNameIdentifier::EventType => format!("Event"),
             NodeTypeNameIdentifier::TypeOrEnumLikeIdentifier(custom_type) => {
