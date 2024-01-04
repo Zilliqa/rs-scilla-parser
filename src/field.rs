@@ -45,9 +45,16 @@ impl std::ops::Deref for FieldList {
 }
 
 impl From<Vec<ContractField>> for FieldList {
-    fn from(value: Vec<ContractField>) -> Self {
-        println!("{value:?}");
-        FieldList::default()
+    fn from(fields: Vec<ContractField>) -> Self {
+        Self(
+            fields
+                .into_iter()
+                .map(|f| Field {
+                    name: f.variable.name.unresolved,
+                    r#type: f.variable.typename.into(),
+                })
+                .collect(),
+        )
     }
 }
 

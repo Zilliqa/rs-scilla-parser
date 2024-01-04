@@ -25,7 +25,7 @@ fn test_chain_id_contract_parse() {
         contract,
         Contract {
             name: "ChainId".to_string(),
-            fields: FieldList::default(),
+            fields: FieldList(vec![Field::new("dummy_field", Type::Uint256)]),
             init_params: FieldList::default(),
             transitions: TransitionList(vec![Transition::new(
                 "EventChainID",
