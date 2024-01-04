@@ -199,6 +199,7 @@ pub struct ContractField {
 pub struct IntermediateRepresentation {
     pub name: String,
     pub version: String,
+    pub init_params: FieldList,
     pub type_definitions: Vec<ConcreteType>,
     pub function_definitions: Vec<ConcreteFunction>,
     pub fields_definitions: Vec<ContractField>,

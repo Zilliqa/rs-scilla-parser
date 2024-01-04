@@ -54,7 +54,7 @@ impl FromStr for Contract {
         Ok(Self {
             name: out.name,
             transitions: out.function_definitions.into(),
-            init_params: FieldList::default(),
+            init_params: out.init_params,
             fields: out.fields_definitions.into(),
         })
     }

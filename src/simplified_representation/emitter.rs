@@ -178,9 +178,9 @@ impl AstConverting for SrEmitter {
         println!("{node:#?}");
         match mode {
             TreeTraversalMode::Enter => match node {
-                NodeTypeNameIdentifier::ByteStringType(b) => {
+                NodeTypeNameIdentifier::ByteStringType(bytestr) => {
                     let symbol = IrIdentifier::new(
-                        "ByStr20".to_string(),
+                        bytestr.to_string(),
                         IrIdentifierKind::Unknown,
                         self.current_location(),
                     );
@@ -485,15 +485,20 @@ impl AstConverting for SrEmitter {
 
     fn emit_component_parameters(
         &mut self,
-        _mode: TreeTraversalMode,
+        mode: TreeTraversalMode,
         node: &NodeComponentParameters,
     ) -> Result<TraversalResult, String> {
-        for param in node.parameters.iter() {
-            let _ = param.visit(self)?;
-            let _ir_arg = self.pop_variable_declaration()?;
+        match mode {
+            TreeTraversalMode::Enter => {
+                for param in node.parameters.iter() {
+                    let _ = param.visit(self)?;
+                    let init_param = self.pop_variable_declaration()?;
+                    self.ir.init_params.push(init_param);
+                }
+            }
+            TreeTraversalMode::Exit => {}
         }
         Ok(TraversalResult::Continue)
-        // TODO:        unimplemented!();
     }
 
     fn emit_parameter_pair(
