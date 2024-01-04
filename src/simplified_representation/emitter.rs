@@ -2,8 +2,8 @@ use std::mem;
 
 use crate::{
     ast::{converting::AstConverting, nodes::*, visitor::AstVisitor},
-    intermediate_representation::primitives::*,
     parser::lexer::SourcePosition,
+    simplified_representation::primitives::*,
     Field, FieldList,
 };
 
@@ -15,9 +15,9 @@ enum StackObject {
     VariableDeclaration(Field),
 }
 
-/// The `IrEmitter` struct is used for bookkeeping during the conversion of a Scilla AST to an intermediate representation.
+/// The `SrEmitter` struct is used for bookkeeping during the conversion of a Scilla AST to a simplified representation.
 /// It implements the `AstConverting` trait, which is a generic trait for AST conversions.
-pub struct IrEmitter {
+pub struct SrEmitter {
     /// Stack of objects used during the conversion process.
     stack: Vec<StackObject>,
 
@@ -34,7 +34,7 @@ pub struct IrEmitter {
     source_positions: Vec<(SourcePosition, SourcePosition)>,
 }
 
-impl IrEmitter {
+impl SrEmitter {
     pub fn new() -> Self {
         let ns = IrIdentifier {
             unresolved: "".to_string(),
@@ -48,7 +48,7 @@ impl IrEmitter {
             ),
         };
         // TODO: Repeat similar code for all literals
-        IrEmitter {
+        SrEmitter {
             stack: Vec::new(),
             current_namespace: ns.clone(),
             namespace_stack: [ns].to_vec(),
@@ -136,7 +136,7 @@ impl IrEmitter {
     }
 }
 
-impl AstConverting for IrEmitter {
+impl AstConverting for SrEmitter {
     fn push_source_position(&mut self, start: &SourcePosition, end: &SourcePosition) {
         self.source_positions.push((start.clone(), end.clone()));
     }

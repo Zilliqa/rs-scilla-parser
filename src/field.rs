@@ -1,4 +1,4 @@
-use crate::{intermediate_representation::primitives::ContractField, Type};
+use crate::{simplified_representation::primitives::ContractField, Type};
 
 #[derive(Debug, PartialEq, Clone)]
 pub struct Field {

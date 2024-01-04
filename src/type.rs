@@ -1,6 +1,6 @@
 use std::{fmt::Display, str::FromStr};
 
-use crate::{intermediate_representation::primitives::IrIdentifier, Error};
+use crate::{simplified_representation::primitives::IrIdentifier, Error};
 
 /// Represents all different scilla types.
 #[derive(Debug, PartialEq, Clone)]

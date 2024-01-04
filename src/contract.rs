@@ -1,8 +1,8 @@
 use std::{path::Path, str::FromStr};
 
 use crate::{
-    intermediate_representation::emitter::IrEmitter,
     parser::{lexer::Lexer, parser},
+    simplified_representation::emitter::SrEmitter,
     Error, FieldList, TransitionList,
 };
 
@@ -48,7 +48,7 @@ impl FromStr for Contract {
         let mut errors = vec![];
         let parsed = parser::ProgramParser::new().parse(&mut errors, Lexer::new(&contract))?;
 
-        let mut emitter = IrEmitter::new();
+        let mut emitter = SrEmitter::new();
         let out = emitter.emit(&parsed).unwrap();
         println!("{out:?}");
         Ok(Self {

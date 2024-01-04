@@ -1,5 +1,5 @@
 use crate::{
-    intermediate_representation::primitives::{ConcreteFunction, FunctionKind},
+    simplified_representation::primitives::{ConcreteFunction, FunctionKind},
     FieldList,
 };
 

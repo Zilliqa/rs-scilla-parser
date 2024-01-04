@@ -1,6 +1,6 @@
 use crate::{
-    intermediate_representation::primitives::{IrIdentifier, IrIdentifierKind},
     parser::lexer::SourcePosition,
+    simplified_representation::primitives::{IrIdentifier, IrIdentifierKind},
 };
 
 #[derive(Debug, Clone)]
