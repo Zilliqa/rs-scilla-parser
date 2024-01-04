@@ -39,6 +39,27 @@ pub struct IrIdentifier {
     pub source_location: (SourcePosition, SourcePosition),
 }
 
+#[derive(Debug, Clone)]
+pub struct SrType {
+    pub main_type: String,
+    pub sub_types: Vec<SrType>,
+}
+
+impl SrType {
+    pub fn push_sub_type(&mut self, sub_type: SrType) {
+        self.sub_types.push(sub_type);
+    }
+}
+
+impl From<IrIdentifier> for SrType {
+    fn from(value: IrIdentifier) -> Self {
+        Self {
+            main_type: value.unresolved,
+            sub_types: vec![],
+        }
+    }
+}
+
 impl IrIdentifier {
     /// Constructor for the IrIdentifier struct.
     pub fn new(

@@ -1,6 +1,6 @@
 use std::{fmt::Display, str::FromStr};
 
-use crate::{simplified_representation::primitives::IrIdentifier, Error};
+use crate::{simplified_representation::primitives::SrType, Error};
 
 /// Represents all different scilla types.
 #[derive(Debug, PartialEq, Clone)]
@@ -98,9 +98,9 @@ impl Display for Type {
     }
 }
 
-impl From<IrIdentifier> for Type {
-    fn from(identifier: IrIdentifier) -> Self {
-        match identifier.unresolved.as_str() {
+impl From<SrType> for Type {
+    fn from(mut type_definition: SrType) -> Self {
+        match type_definition.main_type.as_str() {
             "Int32" => Type::Int32,
             "Int64" => Type::Int64,
             "Int128" => Type::Int128,
@@ -113,7 +113,9 @@ impl From<IrIdentifier> for Type {
             "ByStr20" => Type::ByStr(20),
             "BNum" => Type::BNum,
             "Bool" => Type::Bool,
-            _ => todo!("{identifier:?}"),
+            // TODO: Remove unwrap
+            "Option" => Type::Option(Box::new(type_definition.sub_types.pop().unwrap().into())),
+            _ => todo!("{type_definition:?}"),
         }
     }
 }

@@ -13,6 +13,7 @@ use crate::ast::{TraversalResult, TreeTraversalMode};
 enum StackObject {
     IrIdentifier(IrIdentifier),
     VariableDeclaration(Field),
+    TypeDefinition(SrType),
 }
 
 /// The `SrEmitter` struct is used for bookkeeping during the conversion of a Scilla AST to a simplified representation.
@@ -117,6 +118,23 @@ impl SrEmitter {
         Ok(ret)
     }
 
+    fn pop_type_definition(&mut self) -> Result<SrType, String> {
+        let ret = if let Some(candidate) = self.stack.pop() {
+            match candidate {
+                StackObject::TypeDefinition(n) => n,
+                _ => {
+                    return Err(format!(
+                        "Expected type definition, but found {:?}.",
+                        candidate
+                    ));
+                }
+            }
+        } else {
+            return Err("Expected type definition, but found nothing.".to_string());
+        };
+
+        Ok(ret)
+    }
     pub fn emit(&mut self, node: &NodeProgram) -> Result<Box<IntermediateRepresentation>, String> {
         let result = node.contract_definition.visit(self);
         match result {
@@ -235,6 +253,9 @@ impl AstConverting for SrEmitter {
             }
             NodeTypeArgument::GenericTypeArgument(n) => {
                 let _ = n.visit(self)?;
+                let identifier = self.pop_ir_identifier()?;
+                self.stack
+                    .push(StackObject::TypeDefinition(identifier.into()));
             }
             NodeTypeArgument::TemplateTypeArgument(_) => {
                 unimplemented!();
@@ -255,13 +276,19 @@ impl AstConverting for SrEmitter {
     ) -> Result<TraversalResult, String> {
         match node {
             NodeScillaType::GenericTypeWithArgs(lead, args) => {
+                let _ = lead.visit(self)?;
+                let identifier = self.pop_ir_identifier()?;
+                self.stack
+                    .push(StackObject::TypeDefinition(identifier.into()));
                 if args.len() > 0 {
-                    // TODO: Deal with arguments
+                    let mut main_type = self.pop_type_definition()?;
                     for arg in args {
                         let _ = arg.visit(self)?;
+                        let sub_type = self.pop_type_definition()?;
+                        main_type.push_sub_type(sub_type);
                     }
+                    self.stack.push(StackObject::TypeDefinition(main_type));
                 }
-                let _ = lead.visit(self)?;
             }
             NodeScillaType::MapType(key, value) => {
                 let _ = key.visit(self)?;
@@ -492,9 +519,7 @@ impl AstConverting for SrEmitter {
         let name = node.identifier_name.clone();
         let _ = node.annotation.visit(self)?;
 
-        let mut typename = self.pop_ir_identifier()?;
-        assert!(typename.kind == IrIdentifierKind::Unknown);
-        typename.kind = IrIdentifierKind::TypeName;
+        let typename = self.pop_type_definition()?;
 
         let s = StackObject::VariableDeclaration(Field::new(&name.node, typename.into()));
         self.stack.push(s);
