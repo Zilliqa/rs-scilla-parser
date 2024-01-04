@@ -115,7 +115,13 @@ impl From<SrType> for Type {
             "Bool" => Type::Bool,
             // TODO: Remove unwrap
             "Option" => Type::Option(Box::new(type_definition.sub_types.pop().unwrap().into())),
-            _ => todo!("{type_definition:?}"),
+            "List" => Type::List(Box::new(type_definition.sub_types.pop().unwrap().into())),
+            "Pair" => {
+                let t2 = type_definition.sub_types.pop().unwrap();
+                let t1 = type_definition.sub_types.pop().unwrap();
+                Type::Pair(Box::new(t1.into()), Box::new(t2.into()))
+            }
+            _ => todo!("{type_definition:#?}"),
         }
     }
 }

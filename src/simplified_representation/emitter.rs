@@ -175,9 +175,18 @@ impl AstConverting for SrEmitter {
         mode: TreeTraversalMode,
         node: &NodeTypeNameIdentifier,
     ) -> Result<TraversalResult, String> {
+        println!("{node:#?}");
         match mode {
             TreeTraversalMode::Enter => match node {
-                NodeTypeNameIdentifier::ByteStringType(_) => (),
+                NodeTypeNameIdentifier::ByteStringType(b) => {
+                    let symbol = IrIdentifier::new(
+                        "ByStr20".to_string(),
+                        IrIdentifierKind::Unknown,
+                        self.current_location(),
+                    );
+
+                    self.stack.push(StackObject::IrIdentifier(symbol));
+                }
                 NodeTypeNameIdentifier::EventType => {}
                 NodeTypeNameIdentifier::TypeOrEnumLikeIdentifier(name) => {
                     let symbol = IrIdentifier::new(

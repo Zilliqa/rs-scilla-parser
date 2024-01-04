@@ -1,0 +1,10 @@
+scilla_version 0
+  
+(***************************************************)
+(*             The contract definition             *)
+(***************************************************)
+
+contract Bug()
+
+transition fundUserWithTag(user : ByStr20)
+end

@@ -36,6 +36,12 @@ fn test_timestamp_contract_parse() {
 }
 
 #[test]
+fn bystr_bug() {
+    let contract_path = PathBuf::from("tests/contracts/ByStrBug.scilla");
+    let contract = Contract::parse(&contract_path).unwrap();
+}
+
+#[test]
 fn test_chain_id_contract_parse() {
     let contract_path = PathBuf::from("tests/contracts/chainid.scilla");
     let contract = Contract::parse(&contract_path).unwrap();
