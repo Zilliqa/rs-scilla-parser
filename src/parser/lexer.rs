@@ -1,4 +1,4 @@
-use std::{convert::From, fmt::Display, iter::Peekable, str::CharIndices, string::String};
+use std::{convert::From, iter::Peekable, str::CharIndices, string::String};
 
 use regex::Regex;
 

@@ -1,6 +1,6 @@
 use std::{fmt::Display, str::FromStr};
 
-use crate::Error;
+use crate::{intermediate_representation::primitives::IrIdentifier, Error};
 
 /// Represents all different scilla types.
 #[derive(Debug, PartialEq)]
@@ -94,6 +94,25 @@ impl Display for Type {
             Type::Pair(ref k, ref v) => write!(f, "(Pair {} {})", k, v),
             Type::ByStr(n) => write!(f, "ByStr{}", n),
             Type::Other(ref s) => write!(f, "{}", s),
+        }
+    }
+}
+
+impl From<IrIdentifier> for Type {
+    fn from(identifier: IrIdentifier) -> Self {
+        match identifier.unresolved.as_str() {
+            "Int32" => Type::Int32,
+            "Int64" => Type::Int64,
+            "Int128" => Type::Int128,
+            "Int256" => Type::Int256,
+            "Uint32" => Type::Uint32,
+            "Uint64" => Type::Uint64,
+            "Uint128" => Type::Uint128,
+            "Uint256" => Type::Uint256,
+            "String" => Type::String,
+            "ByStr20" => Type::ByStr(20),
+            "BNum" => Type::BNum,
+            _ => unimplemented!(),
         }
     }
 }

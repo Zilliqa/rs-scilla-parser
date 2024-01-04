@@ -1,6 +1,7 @@
-use lexpr::Value;
-
-use crate::{Error, Type};
+use crate::{
+    intermediate_representation::primitives::{ContractField, VariableDeclaration},
+    Type,
+};
 
 #[derive(Debug, PartialEq)]
 pub struct Field {
@@ -32,18 +33,6 @@ impl Field {
     }
 }
 
-impl TryFrom<&Value> for Field {
-    type Error = Error;
-
-    /// Try to parse a field from a lexpr::Value
-    fn try_from(value: &Value) -> Result<Self, Self::Error> {
-        let name = value[0]["SimpleLocal"][0].to_string();
-        let r#type = value[1].to_string().parse()?;
-
-        Ok(Field { name, r#type })
-    }
-}
-
 #[derive(Debug, PartialEq, Default)]
 pub struct FieldList(pub Vec<Field>);
 
@@ -55,21 +44,23 @@ impl std::ops::Deref for FieldList {
     }
 }
 
-impl TryFrom<&Value> for FieldList {
-    type Error = Error;
+impl From<Vec<ContractField>> for FieldList {
+    fn from(value: Vec<ContractField>) -> Self {
+        println!("{value:?}");
+        FieldList::default()
+    }
+}
 
-    /// Try to parse a list of fields from a lexpr::Value
-    fn try_from(value: &Value) -> Result<Self, Self::Error> {
-        if !value.is_list() {
-            return Ok(FieldList::default());
-        }
-
-        let fields: Result<Vec<Field>, Error> = value
-            .list_iter()
-            .unwrap()
-            .map(|elem| elem.try_into())
-            .collect();
-
-        Ok(FieldList(fields?))
+impl From<Vec<VariableDeclaration>> for FieldList {
+    fn from(variables: Vec<VariableDeclaration>) -> Self {
+        Self(
+            variables
+                .into_iter()
+                .map(|v| Field {
+                    name: v.name.unresolved,
+                    r#type: v.typename.into(),
+                })
+                .collect(),
+        )
     }
 }

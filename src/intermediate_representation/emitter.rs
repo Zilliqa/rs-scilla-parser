@@ -10,9 +10,6 @@ use crate::ast::{TraversalResult, TreeTraversalMode};
 
 #[derive(Debug, Clone)]
 enum StackObject {
-    /// Represents an EnumValue object on the stack.
-    EnumValue(EnumValue),
-
     /// Represents an IrIdentifier object on the stack.
     IrIdentifier(IrIdentifier),
 
@@ -57,7 +54,6 @@ impl IrEmitter {
             stack: Vec::new(),
             current_namespace: ns.clone(),
             namespace_stack: [ns].to_vec(),
-            /// current_function: None,
             ir: Box::new(IntermediateRepresentation::default()),
             source_positions: [(
                 SourcePosition::invalid_position(),
@@ -105,21 +101,6 @@ impl IrEmitter {
         Ok(ret)
     }
 
-    fn pop_enum_value(&mut self) -> Result<EnumValue, String> {
-        let ret = if let Some(candidate) = self.stack.pop() {
-            match candidate {
-                StackObject::EnumValue(n) => n,
-                _ => {
-                    return Err(format!("Expected enum value, but found {:?}.", candidate));
-                }
-            }
-        } else {
-            return Err("Expected enum value, but found nothing.".to_string());
-        };
-
-        Ok(ret)
-    }
-
     fn pop_variable_declaration(&mut self) -> Result<VariableDeclaration, String> {
         let ret = if let Some(candidate) = self.stack.pop() {
             match candidate {
@@ -139,7 +120,7 @@ impl IrEmitter {
     }
 
     pub fn emit(&mut self, node: &NodeProgram) -> Result<Box<IntermediateRepresentation>, String> {
-        let result = node.visit(self);
+        let result = node.contract_definition.visit(self);
         match result {
             Err(m) => panic!("{}", m),
             _ => (),
@@ -181,14 +162,7 @@ impl AstConverting for IrEmitter {
         match mode {
             TreeTraversalMode::Enter => match node {
                 NodeTypeNameIdentifier::ByteStringType(_) => (),
-                NodeTypeNameIdentifier::EventType => {
-                    /*
-                    self.stack.push(StackObject::Identifier(Identifier::Event(
-                        "Event".to_string(),
-                    )));
-                    */
-                    unimplemented!()
-                }
+                NodeTypeNameIdentifier::EventType => {}
                 NodeTypeNameIdentifier::TypeOrEnumLikeIdentifier(name) => {
                     let symbol = IrIdentifier::new(
                         name.to_string(),
@@ -227,7 +201,7 @@ impl AstConverting for IrEmitter {
     fn emit_variable_identifier(
         &mut self,
         _mode: TreeTraversalMode,
-        node: &NodeVariableIdentifier,
+        _node: &NodeVariableIdentifier,
     ) -> Result<TraversalResult, String> {
         Ok(TraversalResult::SkipChildren)
     }
@@ -351,7 +325,7 @@ impl AstConverting for IrEmitter {
     fn emit_full_expression(
         &mut self,
         _mode: TreeTraversalMode,
-        node: &NodeFullExpression,
+        _node: &NodeFullExpression,
     ) -> Result<TraversalResult, String> {
         Ok(TraversalResult::SkipChildren)
     }
@@ -375,9 +349,7 @@ impl AstConverting for IrEmitter {
         _mode: TreeTraversalMode,
         _node: &NodeAtomicExpression,
     ) -> Result<TraversalResult, String> {
-        // TODO:
-        Ok(TraversalResult::Continue)
-        //        unimplemented!();
+        unimplemented!();
     }
     fn emit_contract_type_arguments(
         &mut self,
@@ -389,7 +361,7 @@ impl AstConverting for IrEmitter {
     fn emit_value_literal(
         &mut self,
         _mode: TreeTraversalMode,
-        node: &NodeValueLiteral,
+        _node: &NodeValueLiteral,
     ) -> Result<TraversalResult, String> {
         Ok(TraversalResult::SkipChildren)
     }
@@ -403,7 +375,7 @@ impl AstConverting for IrEmitter {
     fn emit_pattern(
         &mut self,
         _mode: TreeTraversalMode,
-        node: &NodePattern,
+        _node: &NodePattern,
     ) -> Result<TraversalResult, String> {
         Ok(TraversalResult::SkipChildren)
     }
@@ -432,7 +404,7 @@ impl AstConverting for IrEmitter {
     fn emit_statement(
         &mut self,
         _mode: TreeTraversalMode,
-        node: &NodeStatement,
+        _node: &NodeStatement,
     ) -> Result<TraversalResult, String> {
         Ok(TraversalResult::SkipChildren)
     }
@@ -478,8 +450,12 @@ impl AstConverting for IrEmitter {
     fn emit_component_parameters(
         &mut self,
         _mode: TreeTraversalMode,
-        _node: &NodeComponentParameters,
+        node: &NodeComponentParameters,
     ) -> Result<TraversalResult, String> {
+        for param in node.parameters.iter() {
+            let _ = param.visit(self)?;
+            let _ir_arg = self.pop_variable_declaration()?;
+        }
         Ok(TraversalResult::Continue)
         // TODO:        unimplemented!();
     }
@@ -496,15 +472,15 @@ impl AstConverting for IrEmitter {
     fn emit_component_body(
         &mut self,
         _mode: TreeTraversalMode,
-        node: &NodeComponentBody,
+        _node: &NodeComponentBody,
     ) -> Result<TraversalResult, String> {
         Ok(TraversalResult::SkipChildren)
     }
 
     fn emit_statement_block(
         &mut self,
-        mode: TreeTraversalMode,
-        _node: &NodeStatementBlock,
+        _node: TreeTraversalMode,
+        _mode: &NodeStatementBlock,
     ) -> Result<TraversalResult, String> {
         Ok(TraversalResult::Continue)
     }
@@ -594,57 +570,9 @@ impl AstConverting for IrEmitter {
     fn emit_library_single_definition(
         &mut self,
         _mode: TreeTraversalMode,
-        node: &NodeLibrarySingleDefinition,
+        _node: &NodeLibrarySingleDefinition,
     ) -> Result<TraversalResult, String> {
-        match node {
-            NodeLibrarySingleDefinition::LetDefinition {
-                variable_name: _,
-                type_annotation: _,
-                expression,
-            } => {
-                /*
-                let declaration_start = match self.current_function {
-                    Some(_) => true,
-                    None => false
-                };
-
-                if declaration_start {
-                    // TODO: self.current_function
-                }
-                */
-
-                expression.visit(self)?;
-                unimplemented!();
-            }
-            NodeLibrarySingleDefinition::TypeDefinition(name, clauses) => {
-                let _ = name.visit(self)?;
-                let mut name = self.pop_ir_identifier()?;
-                assert!(name.kind == IrIdentifierKind::Unknown);
-                name.kind = IrIdentifierKind::TypeName;
-                // The name itself is being defined here
-                name.is_definition = true;
-                let mut user_type = Variant::new();
-
-                if let Some(clauses) = clauses {
-                    for clause in clauses.iter() {
-                        let _ = clause.visit(self)?;
-                        let mut field = self.pop_enum_value()?;
-
-                        // And the field names are being defined as well
-                        field.name.is_definition = true;
-                        user_type.add_field(field);
-                    }
-                }
-
-                self.ir.type_definitions.push(ConcreteType::Variant {
-                    name,
-                    namespace: self.current_namespace.clone(),
-                    data_layout: Box::new(user_type),
-                });
-            }
-        }
-
-        Ok(TraversalResult::SkipChildren)
+        unimplemented!()
     }
 
     fn emit_contract_definition(
@@ -757,7 +685,7 @@ impl AstConverting for IrEmitter {
     fn emit_type_alternative_clause(
         &mut self,
         _mode: TreeTraversalMode,
-        node: &NodeTypeAlternativeClause,
+        _node: &NodeTypeAlternativeClause,
     ) -> Result<TraversalResult, String> {
         Ok(TraversalResult::SkipChildren)
     }

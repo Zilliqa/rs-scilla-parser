@@ -1,9 +1,9 @@
 use std::{path::Path, str::FromStr};
 
 use crate::{
-    intermediate_representation::{emitter::IrEmitter, primitives::FunctionKind},
+    intermediate_representation::emitter::IrEmitter,
     parser::{lexer::Lexer, parser},
-    Error, FieldList, Transition, TransitionList,
+    Error, FieldList, TransitionList,
 };
 
 #[derive(Debug, PartialEq, Default)]
@@ -53,26 +53,9 @@ impl FromStr for Contract {
         println!("{out:?}");
         Ok(Self {
             name: out.name,
-            transitions: TransitionList(
-                out.function_definitions
-                    .into_iter()
-                    .filter_map(|f| {
-                        match f.function_kind {
-                            FunctionKind::Transition => {
-                                Some(Transition {
-                                    name: f.name.unresolved,
-                                    params: FieldList::default(), // Field{
-                                                                  // name: f.name,
-                                                                  // r#type: todo!(),
-                                })
-                            }
-                            _ => None,
-                        }
-                    })
-                    .collect(),
-            ),
+            transitions: out.function_definitions.into(),
             init_params: FieldList::default(),
-            fields: FieldList::default(),
+            fields: out.fields_definitions.into(),
         })
     }
 }
