@@ -3,7 +3,7 @@ use std::{fmt::Display, str::FromStr};
 use crate::{intermediate_representation::primitives::IrIdentifier, Error};
 
 /// Represents all different scilla types.
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub enum Type {
     Int32,
     Int64,
@@ -112,7 +112,8 @@ impl From<IrIdentifier> for Type {
             "String" => Type::String,
             "ByStr20" => Type::ByStr(20),
             "BNum" => Type::BNum,
-            _ => unimplemented!(),
+            "Bool" => Type::Bool,
+            _ => todo!("{identifier:?}"),
         }
     }
 }

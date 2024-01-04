@@ -1,9 +1,6 @@
-use crate::{
-    intermediate_representation::primitives::{ContractField, VariableDeclaration},
-    Type,
-};
+use crate::{intermediate_representation::primitives::ContractField, Type};
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub struct Field {
     pub name: String,
     pub r#type: Type,
@@ -33,7 +30,7 @@ impl Field {
     }
 }
 
-#[derive(Debug, PartialEq, Default)]
+#[derive(Debug, PartialEq, Default, Clone)]
 pub struct FieldList(pub Vec<Field>);
 
 impl std::ops::Deref for FieldList {
@@ -46,28 +43,12 @@ impl std::ops::Deref for FieldList {
 
 impl From<Vec<ContractField>> for FieldList {
     fn from(fields: Vec<ContractField>) -> Self {
-        Self(
-            fields
-                .into_iter()
-                .map(|f| Field {
-                    name: f.variable.name.unresolved,
-                    r#type: f.variable.typename.into(),
-                })
-                .collect(),
-        )
+        Self(fields.into_iter().map(|f| f.variable).collect())
     }
 }
 
-impl From<Vec<VariableDeclaration>> for FieldList {
-    fn from(variables: Vec<VariableDeclaration>) -> Self {
-        Self(
-            variables
-                .into_iter()
-                .map(|v| Field {
-                    name: v.name.unresolved,
-                    r#type: v.typename.into(),
-                })
-                .collect(),
-        )
+impl FieldList {
+    pub fn push(&mut self, field: Field) {
+        self.0.push(field);
     }
 }

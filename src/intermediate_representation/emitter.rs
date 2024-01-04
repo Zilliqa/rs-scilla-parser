@@ -4,17 +4,15 @@ use crate::{
     ast::{converting::AstConverting, nodes::*, visitor::AstVisitor},
     intermediate_representation::primitives::*,
     parser::lexer::SourcePosition,
+    Field, FieldList,
 };
 
 use crate::ast::{TraversalResult, TreeTraversalMode};
 
 #[derive(Debug, Clone)]
 enum StackObject {
-    /// Represents an IrIdentifier object on the stack.
     IrIdentifier(IrIdentifier),
-
-    /// Represents a VariableDeclaration object on the stack.
-    VariableDeclaration(VariableDeclaration),
+    VariableDeclaration(Field),
 }
 
 /// The `IrEmitter` struct is used for bookkeeping during the conversion of a Scilla AST to an intermediate representation.
@@ -101,7 +99,7 @@ impl IrEmitter {
         Ok(ret)
     }
 
-    fn pop_variable_declaration(&mut self) -> Result<VariableDeclaration, String> {
+    fn pop_variable_declaration(&mut self) -> Result<Field, String> {
         let ret = if let Some(candidate) = self.stack.pop() {
             match candidate {
                 StackObject::VariableDeclaration(n) => n,
@@ -257,11 +255,13 @@ impl AstConverting for IrEmitter {
     ) -> Result<TraversalResult, String> {
         match node {
             NodeScillaType::GenericTypeWithArgs(lead, args) => {
-                let _ = lead.visit(self)?;
                 if args.len() > 0 {
                     // TODO: Deal with arguments
-                    unimplemented!()
+                    for arg in args {
+                        let _ = arg.visit(self)?;
+                    }
                 }
+                let _ = lead.visit(self)?;
             }
             NodeScillaType::MapType(key, value) => {
                 let _ = key.visit(self)?;
@@ -496,8 +496,7 @@ impl AstConverting for IrEmitter {
         assert!(typename.kind == IrIdentifierKind::Unknown);
         typename.kind = IrIdentifierKind::TypeName;
 
-        let s =
-            StackObject::VariableDeclaration(VariableDeclaration::new(name.node, false, typename));
+        let s = StackObject::VariableDeclaration(Field::new(&name.node, typename.into()));
         self.stack.push(s);
 
         Ok(TraversalResult::SkipChildren)
@@ -614,9 +613,9 @@ impl AstConverting for IrEmitter {
     ) -> Result<TraversalResult, String> {
         let _ = node.typed_identifier.visit(self)?;
 
-        let mut variable = self.pop_variable_declaration()?;
+        let variable = self.pop_variable_declaration()?;
         let _ = node.right_hand_side.visit(self)?;
-        variable.name.kind = IrIdentifierKind::State;
+        // variable.name.kind = IrIdentifierKind::State;
 
         let field = ContractField {
             namespace: self.current_namespace.clone(),
@@ -657,7 +656,7 @@ impl AstConverting for IrEmitter {
         // Enter
         let _ = node.name.visit(self)?;
 
-        let mut arguments: Vec<VariableDeclaration> = [].to_vec();
+        let mut arguments = FieldList::default();
         for arg in node.parameters.node.parameters.iter() {
             let _ = arg.visit(self)?;
             let ir_arg = self.pop_variable_declaration()?;

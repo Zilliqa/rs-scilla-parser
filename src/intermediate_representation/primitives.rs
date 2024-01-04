@@ -1,4 +1,4 @@
-use crate::parser::lexer::SourcePosition;
+use crate::{parser::lexer::SourcePosition, Field, FieldList};
 
 /// Enum representing the different kinds of identifiers in the intermediate representation.
 #[derive(Debug, Clone, PartialEq)]
@@ -133,56 +133,6 @@ impl Variant {
     }
 }
 
-/// Struct representing a variable declaration in the intermediate representation.
-#[derive(Debug, Clone)]
-pub struct VariableDeclaration {
-    pub name: IrIdentifier,
-    pub typename: IrIdentifier,
-    pub mutable: bool,
-    // TODO:     pub source_location: (SourcePosition,SourcePosition)
-}
-
-impl VariableDeclaration {
-    /// Constructor for the VariableDeclaration struct.
-    pub fn new(name: String, mutable: bool, typename: IrIdentifier) -> Self {
-        Self {
-            name: IrIdentifier {
-                unresolved: name,
-                resolved: None,
-                type_reference: None,
-                kind: if mutable {
-                    IrIdentifierKind::Memory
-                } else {
-                    IrIdentifierKind::VirtualRegister
-                },
-                is_definition: true,
-                source_location: (
-                    SourcePosition::invalid_position(),
-                    SourcePosition::invalid_position(),
-                ),
-            },
-            typename,
-            mutable,
-        }
-    }
-}
-
-/// Struct representing a field address in the intermediate representation.
-#[derive(Debug, Clone)]
-pub struct FieldAddress {
-    pub name: IrIdentifier,
-    pub value: Option<Vec<u8>>, // TODO: Consider dropping this one
-                                // TODO:     pub source_location: (SourcePosition,SourcePosition)
-}
-
-/// Struct representing a case clause in the intermediate representation.
-#[derive(Debug, Clone)]
-pub struct CaseClause {
-    pub expression: IrIdentifier,
-    pub label: IrIdentifier,
-    // TODO:     pub source_location: (SourcePosition,SourcePosition)
-}
-
 /// Enum representing the different kinds of concrete types in the intermediate representation.
 #[derive(Debug, Clone)]
 pub enum ConcreteType {
@@ -213,33 +163,22 @@ pub struct ConcreteFunction {
     pub namespace: IrIdentifier,
     pub function_kind: FunctionKind,
     pub return_type: Option<String>, // TODO: Should be Identifier
-    pub arguments: Vec<VariableDeclaration>,
-}
-
-/// Struct representing a lambda function with a single argument in the intermediate representation.
-#[derive(Debug, Clone)]
-pub struct LambdaFunctionSingleArgument {
-    pub name: IrIdentifier,
-    pub capture: Box<Tuple>,
-    pub argument: VariableDeclaration,
-    pub return_type: Option<String>,
+    pub arguments: FieldList,
 }
 
 /// Struct representing a contract field in the intermediate representation.
 #[derive(Debug)]
 pub struct ContractField {
     pub namespace: IrIdentifier,
-    pub variable: VariableDeclaration,
+    pub variable: Field,
 }
 
 /// Struct representing the intermediate representation of a program.
 #[derive(Debug, Default)]
 pub struct IntermediateRepresentation {
-    // Program IR
     pub name: String,
     pub version: String,
     pub type_definitions: Vec<ConcreteType>,
     pub function_definitions: Vec<ConcreteFunction>,
     pub fields_definitions: Vec<ContractField>,
-    pub lambda_functions: Vec<LambdaFunctionSingleArgument>,
 }
