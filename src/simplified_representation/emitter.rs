@@ -240,16 +240,28 @@ impl AstConverting for SrEmitter {
     fn emit_type_map_key(
         &mut self,
         _mode: TreeTraversalMode,
-        _node: &NodeTypeMapKey,
+        node: &NodeTypeMapKey,
     ) -> Result<TraversalResult, String> {
-        unimplemented!();
+        match node {
+            NodeTypeMapKey::GenericMapKey(key) => key.visit(self)?,
+            NodeTypeMapKey::EnclosedGenericId(key) => key.visit(self)?,
+            NodeTypeMapKey::EnclosedAddressMapKeyType(key) => key.visit(self)?,
+            NodeTypeMapKey::AddressMapKeyType(key) => key.visit(self)?,
+        };
+        Ok(TraversalResult::SkipChildren)
     }
     fn emit_type_map_value(
         &mut self,
         _mode: TreeTraversalMode,
-        _node: &NodeTypeMapValue,
+        node: &NodeTypeMapValue,
     ) -> Result<TraversalResult, String> {
-        unimplemented!();
+        match node {
+            NodeTypeMapValue::MapValueTypeOrEnumLikeIdentifier(value) => value.visit(self)?,
+            NodeTypeMapValue::MapKeyValue(value) => value.visit(self)?,
+            NodeTypeMapValue::MapValueParanthesizedType(value) => value.visit(self)?,
+            NodeTypeMapValue::MapValueAddressType(value) => value.visit(self)?,
+        };
+        Ok(TraversalResult::SkipChildren)
     }
     fn emit_type_argument(
         &mut self,
@@ -302,8 +314,13 @@ impl AstConverting for SrEmitter {
             NodeScillaType::MapType(key, value) => {
                 let _ = key.visit(self)?;
                 let _ = value.visit(self)?;
-                // TODO: Pop the two and create type Map<X,Y>
-                unimplemented!()
+                println!("\n\n\nstack: {:#?}", self.stack);
+                let value_identifier = self.pop_ir_identifier()?;
+                let key_identifier = self.pop_ir_identifier()?;
+                self.stack
+                    .push(StackObject::TypeDefinition(key_identifier.into()));
+                self.stack
+                    .push(StackObject::TypeDefinition(value_identifier.into()));
             }
             NodeScillaType::FunctionType(a, b) => {
                 let _ = (*a).visit(self)?;
@@ -739,6 +756,6 @@ impl AstConverting for SrEmitter {
         _mode: TreeTraversalMode,
         _node: &NodeTypeMapValueAllowingTypeArguments,
     ) -> Result<TraversalResult, String> {
-        unimplemented!();
+        Ok(TraversalResult::SkipChildren)
     }
 }
