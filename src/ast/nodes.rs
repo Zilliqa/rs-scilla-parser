@@ -210,9 +210,9 @@ pub enum NodeTypeMapValue {
     /// Represents a map key value type
     /// Example: `let x: Map (KeyType, (KeyType, ValueType)) = Emp;`
     MapKeyValue(Box<WithMetaData<NodeTypeMapEntry>>),
-    /// Represents a map value paranthesized type
+    /// Represents a map value parenthesized type
     /// Example: `let x: Map (KeyType, (ValueType)) = Emp;`
-    MapValueParanthesizedType(Box<WithMetaData<NodeTypeMapValueAllowingTypeArguments>>),
+    MapValueParenthesizedType(Box<WithMetaData<NodeTypeMapValueAllowingTypeArguments>>),
     /// Represents a map value address type
     /// Example: `let x: Map (KeyType, ByStr20) = Emp;`
     MapValueAddressType(Box<WithMetaData<NodeAddressType>>),

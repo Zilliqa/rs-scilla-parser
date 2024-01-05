@@ -252,15 +252,40 @@ impl AstConverting for SrEmitter {
     }
     fn emit_type_map_value(
         &mut self,
-        _mode: TreeTraversalMode,
+        mode: TreeTraversalMode,
         node: &NodeTypeMapValue,
     ) -> Result<TraversalResult, String> {
-        match node {
-            NodeTypeMapValue::MapValueTypeOrEnumLikeIdentifier(value) => value.visit(self)?,
-            NodeTypeMapValue::MapKeyValue(value) => value.visit(self)?,
-            NodeTypeMapValue::MapValueParanthesizedType(value) => value.visit(self)?,
-            NodeTypeMapValue::MapValueAddressType(value) => value.visit(self)?,
-        };
+        match mode {
+            TreeTraversalMode::Enter => {
+                match node {
+                    NodeTypeMapValue::MapValueTypeOrEnumLikeIdentifier(value) => {
+                        value.visit(self)?;
+                        let value = self.pop_ir_identifier()?;
+                        let key = self.pop_ir_identifier()?;
+                        let map = SrType {
+                            main_type: "Map".to_string(),
+                            sub_types: vec![key.into(), value.into()],
+                        };
+                        self.stack.push(StackObject::TypeDefinition(map));
+                    }
+                    NodeTypeMapValue::MapKeyValue(value) => {
+                        value.visit(self)?;
+                    }
+                    NodeTypeMapValue::MapValueParenthesizedType(value) => {
+                        value.visit(self)?;
+                        let value = self.pop_type_definition()?;
+                        let key = self.pop_ir_identifier()?;
+                        let map = SrType {
+                            main_type: "Map".to_string(),
+                            sub_types: vec![key.into(), value],
+                        };
+                        self.stack.push(StackObject::TypeDefinition(map));
+                    }
+                    NodeTypeMapValue::MapValueAddressType(_value) => unimplemented!(),
+                };
+            }
+            TreeTraversalMode::Exit => {}
+        }
         Ok(TraversalResult::SkipChildren)
     }
     fn emit_type_argument(
@@ -314,13 +339,13 @@ impl AstConverting for SrEmitter {
             NodeScillaType::MapType(key, value) => {
                 let _ = key.visit(self)?;
                 let _ = value.visit(self)?;
-                println!("\n\n\nstack: {:#?}", self.stack);
-                let value_identifier = self.pop_ir_identifier()?;
-                let key_identifier = self.pop_ir_identifier()?;
-                self.stack
-                    .push(StackObject::TypeDefinition(key_identifier.into()));
-                self.stack
-                    .push(StackObject::TypeDefinition(value_identifier.into()));
+                // let value = self.pop_type_definition()?;
+                // let key = self.pop_type_definition()?;
+                // let map = SrType {
+                //     main_type: "Map".to_string(),
+                //     sub_types: vec![key, value],
+                // };
+                // self.stack.push(StackObject::TypeDefinition(map));
             }
             NodeScillaType::FunctionType(a, b) => {
                 let _ = (*a).visit(self)?;
@@ -358,7 +383,7 @@ impl AstConverting for SrEmitter {
         _mode: TreeTraversalMode,
         _node: &NodeTypeMapEntry,
     ) -> Result<TraversalResult, String> {
-        unimplemented!();
+        Ok(TraversalResult::Continue)
     }
     fn emit_address_type_field(
         &mut self,
@@ -701,7 +726,7 @@ impl AstConverting for SrEmitter {
         _mode: TreeTraversalMode,
         _node: &NodeProcedureDefinition,
     ) -> Result<TraversalResult, String> {
-        unimplemented!();
+        Ok(TraversalResult::SkipChildren)
     }
 
     fn emit_transition_definition(
@@ -756,6 +781,6 @@ impl AstConverting for SrEmitter {
         _mode: TreeTraversalMode,
         _node: &NodeTypeMapValueAllowingTypeArguments,
     ) -> Result<TraversalResult, String> {
-        Ok(TraversalResult::SkipChildren)
+        Ok(TraversalResult::Continue)
     }
 }

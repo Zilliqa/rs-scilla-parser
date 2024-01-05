@@ -78,6 +78,11 @@ impl From<SrType> for Type {
                 let t1 = type_definition.sub_types.pop().unwrap();
                 Type::Pair(Box::new(t1.into()), Box::new(t2.into()))
             }
+            "Map" => {
+                let value = type_definition.sub_types.pop().unwrap();
+                let key = type_definition.sub_types.pop().unwrap();
+                Type::Map(Box::new(key.into()), Box::new(value.into()))
+            }
             _ => todo!("{type_definition:#?}"),
         }
     }

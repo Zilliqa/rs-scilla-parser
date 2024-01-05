@@ -247,7 +247,7 @@ impl AstVisitor for NodeTypeMapValue {
 
                     ret
                 }
-                NodeTypeMapValue::MapValueParanthesizedType(value) => {
+                NodeTypeMapValue::MapValueParenthesizedType(value) => {
                     let ret = value.visit(emitter);
 
                     ret

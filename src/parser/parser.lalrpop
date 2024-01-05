@@ -615,7 +615,7 @@ pub TypeMapValue:  WithMetaData<NodeTypeMapValue> = {
     end
     },
     <start:@L> "(" <t:TypeMapValueAllowingTypeArguments> ")" <end:@R> =>  WithMetaData::<NodeTypeMapValue> {
-        node: NodeTypeMapValue::MapValueParanthesizedType(Box::new(t)),
+        node: NodeTypeMapValue::MapValueParenthesizedType(Box::new(t)),
         start,
         end
     },
