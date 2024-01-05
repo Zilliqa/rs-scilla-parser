@@ -294,8 +294,8 @@ impl AstConverting for SrEmitter {
         node: &NodeTypeArgument,
     ) -> Result<TraversalResult, String> {
         match node {
-            NodeTypeArgument::EnclosedTypeArgument(_) => {
-                unimplemented!();
+            NodeTypeArgument::EnclosedTypeArgument(t) => {
+                let _ = t.visit(self)?;
             }
             NodeTypeArgument::GenericTypeArgument(n) => {
                 let _ = n.visit(self)?;

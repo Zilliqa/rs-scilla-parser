@@ -50,7 +50,6 @@ impl FromStr for Contract {
 
         let mut emitter = SrEmitter::new();
         let out = emitter.emit(&parsed).unwrap();
-        println!("{out:?}");
         Ok(Self {
             name: out.name,
             transitions: out.function_definitions.into(),
