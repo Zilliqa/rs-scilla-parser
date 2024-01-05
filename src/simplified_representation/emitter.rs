@@ -175,7 +175,6 @@ impl AstConverting for SrEmitter {
         mode: TreeTraversalMode,
         node: &NodeTypeNameIdentifier,
     ) -> Result<TraversalResult, String> {
-        println!("{node:#?}");
         match mode {
             TreeTraversalMode::Enter => match node {
                 NodeTypeNameIdentifier::ByteStringType(bytestr) => {
@@ -712,7 +711,7 @@ impl AstConverting for SrEmitter {
         _mode: TreeTraversalMode,
         _node: &NodeWithConstraint,
     ) -> Result<TraversalResult, String> {
-        unimplemented!();
+        Ok(TraversalResult::Continue)
     }
     fn emit_component_definition(
         &mut self,
