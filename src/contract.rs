@@ -48,14 +48,8 @@ impl FromStr for Contract {
         let mut errors = vec![];
         let parsed = parser::ProgramParser::new().parse(&mut errors, Lexer::new(&contract))?;
 
-        let mut emitter = SrEmitter::new();
-        let out = emitter.emit(&parsed).unwrap();
-        Ok(Self {
-            name: out.name,
-            transitions: out.function_definitions.into(),
-            init_params: out.init_params,
-            fields: out.fields_definitions.into(),
-        })
+        let emitter = SrEmitter::new();
+        emitter.emit(&parsed).map_err(|e| Error::ParseError(e))
     }
 }
 

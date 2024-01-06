@@ -1,4 +1,4 @@
-use crate::{simplified_representation::primitives::ContractField, Type};
+use crate::Type;
 
 #[derive(Debug, PartialEq, Clone)]
 pub struct Field {
@@ -38,12 +38,6 @@ impl std::ops::Deref for FieldList {
 
     fn deref(&self) -> &Self::Target {
         &self.0
-    }
-}
-
-impl From<Vec<ContractField>> for FieldList {
-    fn from(fields: Vec<ContractField>) -> Self {
-        Self(fields.into_iter().map(|f| f.variable).collect())
     }
 }
 

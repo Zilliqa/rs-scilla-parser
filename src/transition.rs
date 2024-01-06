@@ -1,7 +1,4 @@
-use crate::{
-    simplified_representation::primitives::{ConcreteFunction, FunctionKind},
-    FieldList,
-};
+use crate::FieldList;
 
 #[derive(Debug, PartialEq)]
 pub struct Transition {
@@ -36,19 +33,8 @@ impl std::ops::Deref for TransitionList {
     }
 }
 
-impl From<Vec<ConcreteFunction>> for TransitionList {
-    fn from(function_definitions: Vec<ConcreteFunction>) -> Self {
-        Self(
-            function_definitions
-                .into_iter()
-                .filter_map(|f| match f.function_kind {
-                    FunctionKind::Transition => Some(Transition {
-                        name: f.name.unresolved,
-                        params: f.arguments.into(),
-                    }),
-                    _ => None,
-                })
-                .collect(),
-        )
+impl std::ops::DerefMut for TransitionList {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.0
     }
 }

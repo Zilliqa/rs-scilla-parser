@@ -1,10 +1,8 @@
-use std::mem;
-
 use crate::{
     ast::{converting::AstConverting, nodes::*, visitor::AstVisitor},
     parser::lexer::SourcePosition,
     simplified_representation::primitives::*,
-    Field, FieldList,
+    Contract, Field, FieldList, Transition,
 };
 
 use crate::ast::{TraversalResult, TreeTraversalMode};
@@ -29,7 +27,7 @@ pub struct SrEmitter {
     namespace_stack: Vec<SrIdentifier>,
 
     /// Intermediate representation of the AST.
-    ir: Box<IntermediateRepresentation>,
+    contract: Contract,
 }
 
 impl SrEmitter {
@@ -45,7 +43,7 @@ impl SrEmitter {
             stack: Vec::new(),
             current_namespace: ns.clone(),
             namespace_stack: [ns].to_vec(),
-            ir: Box::new(IntermediateRepresentation::default()),
+            contract: Contract::default(),
         }
     }
 
@@ -115,17 +113,14 @@ impl SrEmitter {
 
         Ok(ret)
     }
-    pub fn emit(&mut self, node: &NodeProgram) -> Result<Box<IntermediateRepresentation>, String> {
-        let result = node.contract_definition.visit(self);
+    pub fn emit(mut self, node: &NodeProgram) -> Result<Contract, String> {
+        let result = node.contract_definition.visit(&mut self);
         match result {
             Err(m) => panic!("{}", m),
             _ => (),
         }
 
-        let mut ret = Box::new(IntermediateRepresentation::default());
-        mem::swap(&mut self.ir, &mut ret);
-
-        Ok(ret)
+        Ok(self.contract)
     }
 }
 
@@ -301,13 +296,6 @@ impl AstConverting for SrEmitter {
             NodeScillaType::MapType(key, value) => {
                 let _ = key.visit(self)?;
                 let _ = value.visit(self)?;
-                // let value = self.pop_type_definition()?;
-                // let key = self.pop_type_definition()?;
-                // let map = SrType {
-                //     main_type: "Map".to_string(),
-                //     sub_types: vec![key, value],
-                // };
-                // self.stack.push(StackObject::TypeDefinition(map));
             }
             NodeScillaType::FunctionType(_a, _b) => {
                 unimplemented!()
@@ -323,12 +311,6 @@ impl AstConverting for SrEmitter {
                 let _ = (*a).visit(self)?;
             }
             NodeScillaType::TypeVarType(_name) => {
-                /*
-                self.stack
-                    .push(StackObject::Identifier(Identifier::TypeName(
-                        name.to_string(),
-                    )));
-                    */
                 unimplemented!()
             }
         };
@@ -490,7 +472,7 @@ impl AstConverting for SrEmitter {
                 for param in node.parameters.iter() {
                     let _ = param.visit(self)?;
                     let init_param = self.pop_variable_declaration()?;
-                    self.ir.init_params.push(init_param);
+                    self.contract.init_params.push(init_param);
                 }
             }
             TreeTraversalMode::Exit => {}
@@ -503,7 +485,7 @@ impl AstConverting for SrEmitter {
         _mode: TreeTraversalMode,
         _node: &NodeParameterPair,
     ) -> Result<TraversalResult, String> {
-        // Delibarate pass through
+        // Deliberate pass through
         Ok(TraversalResult::Continue)
     }
 
@@ -588,7 +570,7 @@ impl AstConverting for SrEmitter {
     ) -> Result<TraversalResult, String> {
         // TODO: Decide whether the namespace should be distinct
         let _ = node.contract_name.visit(self)?;
-        self.ir.name = node.contract_name.to_string();
+        self.contract.name = node.contract_name.to_string();
         let mut ns = self.pop_ir_identifier()?;
         assert!(ns.kind == SrIdentifierKind::Unknown);
         ns.kind = SrIdentifierKind::Namespace;
@@ -620,15 +602,10 @@ impl AstConverting for SrEmitter {
     ) -> Result<TraversalResult, String> {
         let _ = node.typed_identifier.visit(self)?;
 
-        let variable = self.pop_variable_declaration()?;
+        let field = self.pop_variable_declaration()?;
         let _ = node.right_hand_side.visit(self)?;
 
-        let field = ContractField {
-            namespace: self.current_namespace.clone(),
-            variable,
-        };
-
-        self.ir.fields_definitions.push(field);
+        self.contract.fields.push(field);
 
         Ok(TraversalResult::SkipChildren)
     }
@@ -674,15 +651,9 @@ impl AstConverting for SrEmitter {
         function_name.kind = SrIdentifierKind::TransitionName;
         function_name.is_definition = true;
 
-        let function = ConcreteFunction {
-            name: function_name,
-            namespace: self.current_namespace.clone(),
-            function_kind: FunctionKind::Transition,
-            return_type: None, // TODO: Pop of the stack
-            arguments,
-        };
-
-        self.ir.function_definitions.push(function);
+        self.contract
+            .transitions
+            .push(Transition::new(&function_name.unresolved, arguments));
 
         Ok(TraversalResult::SkipChildren)
     }

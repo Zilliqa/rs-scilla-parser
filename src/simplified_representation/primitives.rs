@@ -1,5 +1,3 @@
-use crate::{Field, FieldList};
-
 /// Enum representing the different kinds of identifiers in the simplified representation.
 #[derive(Debug, Clone, PartialEq)]
 pub enum SrIdentifierKind {
@@ -78,39 +76,4 @@ impl SrIdentifier {
             Ok(format!("[{}]", self.unresolved).to_string())
         }
     }
-}
-
-/// Enum representing the different kinds of functions in the simplified representation.
-#[derive(Debug, Clone)]
-pub enum FunctionKind {
-    Procedure,
-    Transition,
-    Function,
-}
-
-/// Struct representing a concrete function in the simplified representation.
-#[derive(Debug, Clone)]
-pub struct ConcreteFunction {
-    pub name: SrIdentifier,
-    pub namespace: SrIdentifier,
-    pub function_kind: FunctionKind,
-    pub return_type: Option<String>, // TODO: Should be Identifier
-    pub arguments: FieldList,
-}
-
-/// Struct representing a contract field in the simplified representation.
-#[derive(Debug)]
-pub struct ContractField {
-    pub namespace: SrIdentifier,
-    pub variable: Field,
-}
-
-/// Struct representing the simplified representation of a program.
-#[derive(Debug, Default)]
-pub struct IntermediateRepresentation {
-    pub name: String,
-    pub version: String,
-    pub init_params: FieldList,
-    pub function_definitions: Vec<ConcreteFunction>,
-    pub fields_definitions: Vec<ContractField>,
 }
