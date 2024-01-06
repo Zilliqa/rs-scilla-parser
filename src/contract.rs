@@ -79,7 +79,6 @@ impl Contract {
     /// );
     /// ```
     pub fn parse(contract_path: &Path) -> Result<Self, Error> {
-        // run_scilla_fmt(contract_path)?.parse();
         std::fs::read_to_string(contract_path)?.parse()
     }
 }
