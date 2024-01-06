@@ -67,13 +67,4 @@ impl SrIdentifier {
             is_definition: false,
         }
     }
-
-    pub fn qualified_name(&self) -> Result<String, String> {
-        // TODO: Change to resolved or throw
-        if let Some(resolved) = &self.resolved {
-            Ok(resolved.clone())
-        } else {
-            Ok(format!("[{}]", self.unresolved).to_string())
-        }
-    }
 }
