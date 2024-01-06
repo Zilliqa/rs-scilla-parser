@@ -80,12 +80,7 @@ impl SrEmitter {
         Ok(ret)
     }
     pub fn emit(mut self, node: &NodeProgram) -> Result<Contract, String> {
-        let result = node.contract_definition.visit(&mut self);
-        match result {
-            Err(m) => panic!("{}", m),
-            _ => (),
-        }
-
+        node.contract_definition.visit(&mut self)?;
         Ok(self.contract)
     }
 }
