@@ -30,9 +30,6 @@ pub struct SrEmitter {
 
     /// Intermediate representation of the AST.
     ir: Box<IntermediateRepresentation>,
-
-    /// Source positions of the AST nodes.
-    source_positions: Vec<(SourcePosition, SourcePosition)>,
 }
 
 impl SrEmitter {
@@ -43,30 +40,13 @@ impl SrEmitter {
             type_reference: None,
             kind: IrIdentifierKind::Namespace,
             is_definition: false,
-            source_location: (
-                SourcePosition::start_position(),
-                SourcePosition::start_position(),
-            ),
         };
-        // TODO: Repeat similar code for all literals
         SrEmitter {
             stack: Vec::new(),
             current_namespace: ns.clone(),
             namespace_stack: [ns].to_vec(),
             ir: Box::new(IntermediateRepresentation::default()),
-            source_positions: [(
-                SourcePosition::invalid_position(),
-                SourcePosition::invalid_position(),
-            )]
-            .to_vec(), // TODO: this should not be necessary
         }
-    }
-
-    fn current_location(&self) -> (SourcePosition, SourcePosition) {
-        self.source_positions
-            .last()
-            .expect("Unable to determine source location")
-            .clone()
     }
 
     fn push_namespace(&mut self, mut ns: IrIdentifier) {
@@ -142,11 +122,6 @@ impl SrEmitter {
             _ => (),
         }
 
-        // Creating type table
-
-        // Annotating symbols with types
-
-        // Returning
         let mut ret = Box::new(IntermediateRepresentation::default());
         mem::swap(&mut self.ir, &mut ret);
 
@@ -155,13 +130,9 @@ impl SrEmitter {
 }
 
 impl AstConverting for SrEmitter {
-    fn push_source_position(&mut self, start: &SourcePosition, end: &SourcePosition) {
-        self.source_positions.push((start.clone(), end.clone()));
-    }
+    fn push_source_position(&mut self, _start: &SourcePosition, _end: &SourcePosition) {}
 
-    fn pop_source_position(&mut self) {
-        self.source_positions.pop();
-    }
+    fn pop_source_position(&mut self) {}
 
     fn emit_byte_str(
         &mut self,
@@ -178,21 +149,13 @@ impl AstConverting for SrEmitter {
         match mode {
             TreeTraversalMode::Enter => match node {
                 NodeTypeNameIdentifier::ByteStringType(bytestr) => {
-                    let symbol = IrIdentifier::new(
-                        bytestr.to_string(),
-                        IrIdentifierKind::Unknown,
-                        self.current_location(),
-                    );
+                    let symbol = IrIdentifier::new(bytestr.to_string(), IrIdentifierKind::Unknown);
 
                     self.stack.push(StackObject::IrIdentifier(symbol));
                 }
                 NodeTypeNameIdentifier::EventType => {}
                 NodeTypeNameIdentifier::TypeOrEnumLikeIdentifier(name) => {
-                    let symbol = IrIdentifier::new(
-                        name.to_string(),
-                        IrIdentifierKind::Unknown,
-                        self.current_location(),
-                    );
+                    let symbol = IrIdentifier::new(name.to_string(), IrIdentifierKind::Unknown);
 
                     self.stack.push(StackObject::IrIdentifier(symbol));
                 }
@@ -346,16 +309,11 @@ impl AstConverting for SrEmitter {
                 // };
                 // self.stack.push(StackObject::TypeDefinition(map));
             }
-            NodeScillaType::FunctionType(a, b) => {
-                let _ = (*a).visit(self)?;
-                let _ = (*b).visit(self)?;
-                // TODO: Implement the function type
+            NodeScillaType::FunctionType(_a, _b) => {
                 unimplemented!()
             }
 
-            NodeScillaType::PolyFunctionType(_name, a) => {
-                // TODO: What to do with name
-                let _ = (*a).visit(self)?;
+            NodeScillaType::PolyFunctionType(_name, _a) => {
                 unimplemented!()
             }
             NodeScillaType::EnclosedType(a) => {
@@ -506,17 +464,15 @@ impl AstConverting for SrEmitter {
                     type_reference: None,
                     kind: IrIdentifierKind::ComponentName,
                     is_definition: false,
-                    source_location: self.current_location(),
                 }));
             }
             NodeComponentId::WithTypeLikeName(name) => {
                 self.stack.push(StackObject::IrIdentifier(IrIdentifier {
-                    unresolved: name.to_string(), // TODO: Travese the tree first and then construct the name
+                    unresolved: name.to_string(),
                     resolved: None,
                     type_reference: None,
                     kind: IrIdentifierKind::ComponentName,
                     is_definition: false,
-                    source_location: self.current_location(),
                 }));
             }
         }
@@ -588,42 +544,13 @@ impl AstConverting for SrEmitter {
     ) -> Result<TraversalResult, String> {
         // Pass through
         Ok(TraversalResult::Continue)
-        //        unimplemented!();
     }
 
     fn emit_program(
         &mut self,
-        mode: TreeTraversalMode,
+        _mode: TreeTraversalMode,
         _node: &NodeProgram,
     ) -> Result<TraversalResult, String> {
-        match mode {
-            TreeTraversalMode::Enter => {
-                /*
-                TODO: Move to LLVM emitter
-                // Parse the version string to u64
-                let version = match node.version.parse::<u64>() {
-                    Ok(v) => v,
-                    Err(_) => {
-                        eprintln!("Failed to parse version");
-                        return Err("Scilla version must be an integer".to_string());
-                    }
-                };
-                let node_version_value = self.context.i64_type().const_int(version, false);
-                // Add a global constant named `scilla_version` to the module
-                let addr_space = inkwell::AddressSpace::from(2u16);
-                let scilla_version = self.module.add_global(
-                    self.context.i64_type(),
-                    Some(addr_space),
-                    "scilla_version",
-                );
-                scilla_version.set_initializer(&node_version_value);
-                scilla_version.set_constant(true);
-                */
-            }
-            TreeTraversalMode::Exit => {
-                // Not sure on what's to be done during exit
-            }
-        }
         Ok(TraversalResult::Continue)
     }
 
@@ -695,7 +622,6 @@ impl AstConverting for SrEmitter {
 
         let variable = self.pop_variable_declaration()?;
         let _ = node.right_hand_side.visit(self)?;
-        // variable.name.kind = IrIdentifierKind::State;
 
         let field = ContractField {
             namespace: self.current_namespace.clone(),

@@ -1,4 +1,4 @@
-use crate::{parser::lexer::SourcePosition, Field, FieldList};
+use crate::{Field, FieldList};
 
 /// Enum representing the different kinds of identifiers in the intermediate representation.
 #[derive(Debug, Clone, PartialEq)]
@@ -36,7 +36,6 @@ pub struct IrIdentifier {
     pub type_reference: Option<String>,
     pub kind: IrIdentifierKind,
     pub is_definition: bool,
-    pub source_location: (SourcePosition, SourcePosition),
 }
 
 #[derive(Debug, Clone)]
@@ -62,18 +61,13 @@ impl From<IrIdentifier> for SrType {
 
 impl IrIdentifier {
     /// Constructor for the IrIdentifier struct.
-    pub fn new(
-        unresolved: String,
-        kind: IrIdentifierKind,
-        source_location: (SourcePosition, SourcePosition),
-    ) -> Self {
+    pub fn new(unresolved: String, kind: IrIdentifierKind) -> Self {
         Self {
             unresolved,
             resolved: None,
             type_reference: None,
             kind,
             is_definition: false,
-            source_location,
         }
     }
 
