@@ -27,15 +27,16 @@ impl FromStr for Contract {
     /// # Example
     /// ```
     /// use std::{error::Error, path::PathBuf};
-    /// use scilla_parser::{run_scilla_fmt, Contract, Field, FieldList, Transition, TransitionList, Type};
-    /// let contract = run_scilla_fmt(&PathBuf::from("tests/contracts/chainid.scilla")).unwrap();
+    /// use scilla_parser::{Contract, Field, FieldList, Transition, TransitionList, Type};
+    /// let contract_path = PathBuf::from("tests/contracts/chainid.scilla");
+    /// let contract_str = include_str!("../tests/contracts/chainid.scilla");
+    /// let contract = contract_str.parse::<Contract>().unwrap();
     ///
-    /// let contract = contract.parse::<Contract>().unwrap();
     /// assert_eq!(
     ///     contract,
     ///     Contract {
     ///         name: "ChainId".to_string(),
-    ///         fields: FieldList::default(),
+    ///         fields: FieldList(vec![Field::new("dummy_field", Type::Uint256)]),
     ///         init_params: FieldList::default(),
     ///         transitions: TransitionList(vec![Transition::new(
     ///             "EventChainID",
@@ -62,12 +63,13 @@ impl Contract {
     /// use std::{error::Error, path::PathBuf};
     /// use scilla_parser::{Contract, Field, FieldList, Transition, TransitionList, Type};
     /// let contract_path = PathBuf::from("tests/contracts/chainid.scilla");
-    /// let contract = Contract::from_path(&contract_path).unwrap();
+    /// let contract = Contract::parse(&contract_path).unwrap();
+    ///
     /// assert_eq!(
     ///     contract,
     ///     Contract {
     ///         name: "ChainId".to_string(),
-    ///         fields: FieldList::default(),
+    ///         fields: FieldList(vec![Field::new("dummy_field", Type::Uint256)]),
     ///         init_params: FieldList::default(),
     ///         transitions: TransitionList(vec![Transition::new(
     ///             "EventChainID",
