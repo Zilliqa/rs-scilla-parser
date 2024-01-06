@@ -17,49 +17,15 @@ enum StackObject {
 /// The `SrEmitter` struct is used for bookkeeping during the conversion of a Scilla AST to a simplified representation.
 /// It implements the `AstConverting` trait, which is a generic trait for AST conversions.
 pub struct SrEmitter {
-    /// Stack of objects used during the conversion process.
     stack: Vec<StackObject>,
-
-    /// Current namespace being processed.
-    current_namespace: SrIdentifier,
-
-    /// Stack of namespaces used during the conversion process.
-    namespace_stack: Vec<SrIdentifier>,
-
-    /// Intermediate representation of the AST.
     contract: Contract,
 }
 
 impl SrEmitter {
     pub fn new() -> Self {
-        let ns = SrIdentifier {
-            unresolved: "".to_string(),
-            resolved: None,
-            type_reference: None,
-            kind: SrIdentifierKind::Namespace,
-            is_definition: false,
-        };
         SrEmitter {
             stack: Vec::new(),
-            current_namespace: ns.clone(),
-            namespace_stack: [ns].to_vec(),
             contract: Contract::default(),
-        }
-    }
-
-    fn push_namespace(&mut self, mut ns: SrIdentifier) {
-        // TODO: Update ns to use nested namespaces
-        ns.kind = SrIdentifierKind::Namespace;
-        self.namespace_stack.push(ns.clone());
-        self.current_namespace = ns;
-    }
-
-    fn pop_namespace(&mut self) {
-        self.namespace_stack.pop();
-        if let Some(ns) = self.namespace_stack.last() {
-            self.current_namespace = ns.clone();
-        } else {
-            panic!("Namespace stack is empty.");
         }
     }
 
@@ -539,20 +505,9 @@ impl AstConverting for SrEmitter {
     fn emit_library_definition(
         &mut self,
         _mode: TreeTraversalMode,
-        node: &NodeLibraryDefinition,
+        _node: &NodeLibraryDefinition,
     ) -> Result<TraversalResult, String> {
-        let _ = node.name.visit(self)?;
-        let mut ns = self.pop_ir_identifier()?;
-        assert!(ns.kind == SrIdentifierKind::Unknown);
-        ns.kind = SrIdentifierKind::Namespace;
-
-        self.push_namespace(ns);
-        for def in node.definitions.iter() {
-            let _ = def.visit(self)?;
-        }
-
-        self.pop_namespace();
-        Ok(TraversalResult::SkipChildren)
+        unimplemented!()
     }
 
     fn emit_library_single_definition(
@@ -568,14 +523,8 @@ impl AstConverting for SrEmitter {
         _mode: TreeTraversalMode,
         node: &NodeContractDefinition,
     ) -> Result<TraversalResult, String> {
-        // TODO: Decide whether the namespace should be distinct
         let _ = node.contract_name.visit(self)?;
         self.contract.name = node.contract_name.to_string();
-        let mut ns = self.pop_ir_identifier()?;
-        assert!(ns.kind == SrIdentifierKind::Unknown);
-        ns.kind = SrIdentifierKind::Namespace;
-
-        self.push_namespace(ns);
 
         let _ = node.parameters.visit(self)?;
 
@@ -591,7 +540,6 @@ impl AstConverting for SrEmitter {
             let _ = component.visit(self)?;
         }
 
-        self.pop_namespace();
         Ok(TraversalResult::SkipChildren)
     }
 
@@ -639,21 +587,26 @@ impl AstConverting for SrEmitter {
         // Enter
         let _ = node.name.visit(self)?;
 
-        let mut arguments = FieldList::default();
-        for arg in node.parameters.node.parameters.iter() {
-            let _ = arg.visit(self)?;
-            let ir_arg = self.pop_variable_declaration()?;
-            arguments.push(ir_arg);
-        }
+        let arguments = node
+            .parameters
+            .node
+            .parameters
+            .iter()
+            .map(|arg| {
+                let _ = arg.visit(self)?;
+                self.pop_variable_declaration()
+            })
+            .collect::<Result<Vec<Field>, _>>()?;
 
         let mut function_name = self.pop_ir_identifier()?;
         assert!(function_name.kind == SrIdentifierKind::ComponentName);
         function_name.kind = SrIdentifierKind::TransitionName;
         function_name.is_definition = true;
 
-        self.contract
-            .transitions
-            .push(Transition::new(&function_name.unresolved, arguments));
+        self.contract.transitions.push(Transition::new(
+            &function_name.unresolved,
+            FieldList(arguments),
+        ));
 
         Ok(TraversalResult::SkipChildren)
     }
