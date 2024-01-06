@@ -11,7 +11,7 @@ use crate::ast::{TraversalResult, TreeTraversalMode};
 
 #[derive(Debug, Clone)]
 enum StackObject {
-    IrIdentifier(IrIdentifier),
+    IrIdentifier(SrIdentifier),
     VariableDeclaration(Field),
     TypeDefinition(SrType),
 }
@@ -23,10 +23,10 @@ pub struct SrEmitter {
     stack: Vec<StackObject>,
 
     /// Current namespace being processed.
-    current_namespace: IrIdentifier,
+    current_namespace: SrIdentifier,
 
     /// Stack of namespaces used during the conversion process.
-    namespace_stack: Vec<IrIdentifier>,
+    namespace_stack: Vec<SrIdentifier>,
 
     /// Intermediate representation of the AST.
     ir: Box<IntermediateRepresentation>,
@@ -34,11 +34,11 @@ pub struct SrEmitter {
 
 impl SrEmitter {
     pub fn new() -> Self {
-        let ns = IrIdentifier {
+        let ns = SrIdentifier {
             unresolved: "".to_string(),
             resolved: None,
             type_reference: None,
-            kind: IrIdentifierKind::Namespace,
+            kind: SrIdentifierKind::Namespace,
             is_definition: false,
         };
         SrEmitter {
@@ -49,9 +49,9 @@ impl SrEmitter {
         }
     }
 
-    fn push_namespace(&mut self, mut ns: IrIdentifier) {
+    fn push_namespace(&mut self, mut ns: SrIdentifier) {
         // TODO: Update ns to use nested namespaces
-        ns.kind = IrIdentifierKind::Namespace;
+        ns.kind = SrIdentifierKind::Namespace;
         self.namespace_stack.push(ns.clone());
         self.current_namespace = ns;
     }
@@ -65,7 +65,7 @@ impl SrEmitter {
         }
     }
 
-    fn pop_ir_identifier(&mut self) -> Result<IrIdentifier, String> {
+    fn pop_ir_identifier(&mut self) -> Result<SrIdentifier, String> {
         let ret = if let Some(candidate) = self.stack.pop() {
             match candidate {
                 StackObject::IrIdentifier(n) => n,
@@ -149,13 +149,13 @@ impl AstConverting for SrEmitter {
         match mode {
             TreeTraversalMode::Enter => match node {
                 NodeTypeNameIdentifier::ByteStringType(bytestr) => {
-                    let symbol = IrIdentifier::new(bytestr.to_string(), IrIdentifierKind::Unknown);
+                    let symbol = SrIdentifier::new(bytestr.to_string(), SrIdentifierKind::Unknown);
 
                     self.stack.push(StackObject::IrIdentifier(symbol));
                 }
                 NodeTypeNameIdentifier::EventType => {}
                 NodeTypeNameIdentifier::TypeOrEnumLikeIdentifier(name) => {
-                    let symbol = IrIdentifier::new(name.to_string(), IrIdentifierKind::Unknown);
+                    let symbol = SrIdentifier::new(name.to_string(), SrIdentifierKind::Unknown);
 
                     self.stack.push(StackObject::IrIdentifier(symbol));
                 }
@@ -458,20 +458,20 @@ impl AstConverting for SrEmitter {
     ) -> Result<TraversalResult, String> {
         match node {
             NodeComponentId::WithRegularId(name) => {
-                self.stack.push(StackObject::IrIdentifier(IrIdentifier {
+                self.stack.push(StackObject::IrIdentifier(SrIdentifier {
                     unresolved: name.to_string(),
                     resolved: None,
                     type_reference: None,
-                    kind: IrIdentifierKind::ComponentName,
+                    kind: SrIdentifierKind::ComponentName,
                     is_definition: false,
                 }));
             }
             NodeComponentId::WithTypeLikeName(name) => {
-                self.stack.push(StackObject::IrIdentifier(IrIdentifier {
+                self.stack.push(StackObject::IrIdentifier(SrIdentifier {
                     unresolved: name.to_string(),
                     resolved: None,
                     type_reference: None,
-                    kind: IrIdentifierKind::ComponentName,
+                    kind: SrIdentifierKind::ComponentName,
                     is_definition: false,
                 }));
             }
@@ -561,8 +561,8 @@ impl AstConverting for SrEmitter {
     ) -> Result<TraversalResult, String> {
         let _ = node.name.visit(self)?;
         let mut ns = self.pop_ir_identifier()?;
-        assert!(ns.kind == IrIdentifierKind::Unknown);
-        ns.kind = IrIdentifierKind::Namespace;
+        assert!(ns.kind == SrIdentifierKind::Unknown);
+        ns.kind = SrIdentifierKind::Namespace;
 
         self.push_namespace(ns);
         for def in node.definitions.iter() {
@@ -590,8 +590,8 @@ impl AstConverting for SrEmitter {
         let _ = node.contract_name.visit(self)?;
         self.ir.name = node.contract_name.to_string();
         let mut ns = self.pop_ir_identifier()?;
-        assert!(ns.kind == IrIdentifierKind::Unknown);
-        ns.kind = IrIdentifierKind::Namespace;
+        assert!(ns.kind == SrIdentifierKind::Unknown);
+        ns.kind = SrIdentifierKind::Namespace;
 
         self.push_namespace(ns);
 
@@ -670,8 +670,8 @@ impl AstConverting for SrEmitter {
         }
 
         let mut function_name = self.pop_ir_identifier()?;
-        assert!(function_name.kind == IrIdentifierKind::ComponentName);
-        function_name.kind = IrIdentifierKind::TransitionName;
+        assert!(function_name.kind == SrIdentifierKind::ComponentName);
+        function_name.kind = SrIdentifierKind::TransitionName;
         function_name.is_definition = true;
 
         let function = ConcreteFunction {
