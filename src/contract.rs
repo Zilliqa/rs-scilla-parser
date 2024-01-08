@@ -47,10 +47,10 @@ impl FromStr for Contract {
     /// ```
     fn from_str(contract: &str) -> Result<Self, Self::Err> {
         let mut errors = vec![];
-        let parsed = parser::ProgramParser::new().parse(&mut errors, Lexer::new(&contract))?;
+        let parsed = parser::ProgramParser::new().parse(&mut errors, Lexer::new(contract))?;
 
-        let emitter = SrEmitter::new();
-        emitter.emit(&parsed).map_err(|e| Error::ParseError(e))
+        let emitter = SrEmitter::default();
+        emitter.emit(&parsed).map_err(Error::ParseError)
     }
 }
 

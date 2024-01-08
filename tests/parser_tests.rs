@@ -7,7 +7,10 @@ mod tests {
         ($parser:ty, $result:expr) => {
             let mut errors = vec![];
             assert!(<$parser>::new()
-                .parse(&mut errors, scilla_parser::parser::lexer::Lexer::new($result))
+                .parse(
+                    &mut errors,
+                    scilla_parser::parser::lexer::Lexer::new($result)
+                )
                 .is_ok());
         };
     }
@@ -16,7 +19,10 @@ mod tests {
         ($parser:ty, $result:expr) => {
             let mut errors = vec![];
             assert!(<$parser>::new()
-                .parse(&mut errors, scilla_parser::parser::lexer::Lexer::new($result))
+                .parse(
+                    &mut errors,
+                    scilla_parser::parser::lexer::Lexer::new($result)
+                )
                 .is_err());
         };
     }
