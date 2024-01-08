@@ -74,6 +74,172 @@ fn test_hello_world_contract_parse() {
 }
 
 #[test]
+fn test_get_fields_contract_parse() {
+    let contract_path = PathBuf::from("tests/contracts/GetFields.scilla");
+    let contract = Contract::parse(&contract_path).unwrap();
+
+    assert_eq!(
+        contract,
+        Contract {
+            name: "GetFields".to_string(),
+            init_params: FieldList::default(),
+            fields: FieldList(vec![
+                Field::new("field_uint32", Type::Uint32),
+                Field::new("field_uint64", Type::Uint64),
+                Field::new("field_uint128", Type::Uint128),
+                Field::new("field_uint256", Type::Uint256),
+                Field::new("field_int32", Type::Int32),
+                Field::new("field_int64", Type::Int64),
+                Field::new("field_int128", Type::Int128),
+                Field::new("field_bnum", Type::BNum),
+                Field::new("field_string", Type::String),
+                Field::new("field_address", Type::ByStr(20)),
+                Field::new("field_bool_false", Type::Bool),
+                Field::new("field_bool_true", Type::Bool),
+                Field::new(
+                    "field_option_bystr20_none",
+                    Type::Option(Box::new(Type::ByStr(20)))
+                ),
+                Field::new(
+                    "field_option_bystr20_some",
+                    Type::Option(Box::new(Type::ByStr(20)))
+                ),
+                Field::new(
+                    "field_option_int32_some",
+                    Type::Option(Box::new(Type::Int32))
+                ),
+                Field::new("field_option_bool_some", Type::Option(Box::new(Type::Bool))),
+                Field::new(
+                    "field_pair",
+                    Type::Pair(Box::new(Type::String), Box::new(Type::Uint32))
+                ),
+                Field::new(
+                    "balances",
+                    Type::Map(Box::new(Type::ByStr(20)), Box::new(Type::Uint128))
+                ),
+                Field::new("field_list", Type::List(Box::new(Type::Int32)))
+            ]),
+            transitions: TransitionList::default(),
+        }
+    );
+}
+
+#[test]
+fn test_call_transition_contract_parse() {
+    let contract_path = PathBuf::from("tests/contracts/CallTransition.scilla");
+    let contract = Contract::parse(&contract_path).unwrap();
+    assert_eq!(
+        contract,
+        Contract {
+            name: "CallTransition".to_string(),
+            init_params: FieldList::default(),
+            fields: FieldList::default(),
+            transitions: TransitionList(vec![
+                Transition::new(
+                    "call_uint32",
+                    FieldList(vec![Field::new("v", Type::Uint32)])
+                ),
+                Transition::new(
+                    "call_uint64",
+                    FieldList(vec![Field::new("v", Type::Uint64)])
+                ),
+                Transition::new(
+                    "call_uint128",
+                    FieldList(vec![Field::new("v", Type::Uint128)])
+                ),
+                Transition::new(
+                    "call_uint256",
+                    FieldList(vec![Field::new("v", Type::Uint256)])
+                ),
+                Transition::new("call_int32", FieldList(vec![Field::new("v", Type::Int32)])),
+                Transition::new("call_int64", FieldList(vec![Field::new("v", Type::Int64)])),
+                Transition::new(
+                    "call_int128",
+                    FieldList(vec![Field::new("v", Type::Int128)])
+                ),
+                Transition::new(
+                    "call_string",
+                    FieldList(vec![Field::new("v", Type::String)])
+                ),
+                Transition::new(
+                    "call_address",
+                    FieldList(vec![Field::new("v", Type::ByStr(20))])
+                ),
+                Transition::new(
+                    "call_option_bool",
+                    FieldList(vec![Field::new("v", Type::Option(Box::new(Type::Bool)))])
+                ),
+                Transition::new("call_bool", FieldList(vec![Field::new("v", Type::Bool)])),
+                Transition::new("call_bnum", FieldList(vec![Field::new("v", Type::BNum)])),
+                Transition::new(
+                    "call_pair",
+                    FieldList(vec![Field::new(
+                        "v",
+                        Type::Pair(Box::new(Type::String), Box::new(Type::Uint32))
+                    )])
+                ),
+                Transition::new(
+                    "call_list",
+                    FieldList(vec![Field::new("v", Type::List(Box::new(Type::ByStr(20))))])
+                ),
+                Transition::new(
+                    "call_list_2",
+                    FieldList(vec![Field::new(
+                        "v",
+                        Type::List(Box::new(Type::Pair(
+                            Box::new(Type::ByStr(20)),
+                            Box::new(Type::List(Box::new(Type::Pair(
+                                Box::new(Type::ByStr(20)),
+                                Box::new(Type::Uint32)
+                            ))))
+                        )))
+                    )])
+                ),
+                Transition::new(
+                    "call_list_3",
+                    FieldList(vec![Field::new(
+                        "v",
+                        Type::List(Box::new(Type::Pair(
+                            Box::new(Type::String),
+                            Box::new(Type::String)
+                        )))
+                    )])
+                ),
+                Transition::new(
+                    "call_list_4",
+                    FieldList(vec![Field::new(
+                        "v",
+                        Type::List(Box::new(Type::Pair(
+                            Box::new(Type::ByStr(20)),
+                            Box::new(Type::List(Box::new(Type::Pair(
+                                Box::new(Type::ByStr(20)),
+                                Box::new(Type::List(Box::new(Type::Pair(
+                                    Box::new(Type::Uint32),
+                                    Box::new(Type::Uint128)
+                                ))))
+                            ))))
+                        )))
+                    )])
+                ),
+                Transition::new(
+                    "call_list_5",
+                    FieldList(vec![Field::new(
+                        "v",
+                        Type::List(Box::new(Type::Pair(
+                            Box::new(Type::ByStr(20)),
+                            Box::new(Type::List(Box::new(Type::Pair(
+                                Box::new(Type::BNum),
+                                Box::new(Type::Uint128)
+                            ))))
+                        )))
+                    )])
+                ),
+            ])
+        }
+    );
+}
+
+#[test]
 fn test_send_zil_contract_parse() {
     let contract_path = PathBuf::from("tests/contracts/SendZil.scilla");
     let contract = Contract::parse(&contract_path).unwrap();
