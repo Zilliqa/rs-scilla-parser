@@ -15,19 +15,16 @@ cargo add scilla_parser
 This will add the scilla_parser dependency to Cargo.toml as specified in the installation instructions above.
 
 # Usage
-This library parses the s-expression of a contract. There are two options:
-1. Use `Contract::from_path` and pass a contract path. This function will automatically call `scilla-fmt` through docker to generate the s-expression needed to parse the contract.
-2. Parse a string (slice) to a contract. The string is supposed to have the s-expression of a contract.
+This library parses a .scilla file. There are two options:
+1. Use `Contract::parse` and pass a contract path.
+2. Parse a string (slice) containing a scilla contract.
 
 ## To parse a Scilla file:
 Here is the code to parse [SendZil.scilla](./tests/contracts/SendZil.scilla) contract:
 
 ```rust
-    use std::{error::Error, path::PathBuf};
-    use scilla_parser::{Contract, Field, FieldList, Transition, TransitionList, Type};
-
     let contract_path = PathBuf::from("tests/contracts/SendZil.scilla");
-    let contract = Contract::from_path(&contract_path).unwrap();
+    let contract = Contract::parse(&contract_path).unwrap();
 
     assert_eq!(
         contract,
@@ -86,10 +83,10 @@ Here is the code to parse [SendZil.scilla](./tests/contracts/SendZil.scilla) con
     );
 ```
 
-## To parse a string containing the s-expression of a scilla contract:
+## To parse a string containing a scilla contract:
 ```rust
-    let sexp: &str = "s-expression of the contract";
-    let contract: Contract = sexp.parse().unwrap();
+    let contract_code: &str = "contract HelloWorld";
+    let contract: Contract = contract_code.parse().unwrap();
 ```
 
 For more examples, take a look at the [tests](./tests/test_parser.rs).

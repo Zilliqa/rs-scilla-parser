@@ -52,7 +52,7 @@ impl fmt::Display for NodeByteStr {
 pub enum NodeTypeNameIdentifier {
     /// Represents a byte string type
     /// Example: `let x: ByStr = "type";`
-    ByteStringType(WithMetaData<NodeByteStr>),
+    ByteStringType(NodeByteStr),
     /// Represents an event type
     /// Example: `event e;`
     EventType,
@@ -66,7 +66,7 @@ impl NodeTypeNameIdentifier {
     pub fn to_string(&self) -> String {
         match self {
             NodeTypeNameIdentifier::ByteStringType(byte_str) => {
-                format!("{}", byte_str.node.to_string())
+                format!("{}", byte_str.to_string())
             }
             NodeTypeNameIdentifier::EventType => format!("Event"),
             NodeTypeNameIdentifier::TypeOrEnumLikeIdentifier(custom_type) => {
@@ -210,9 +210,9 @@ pub enum NodeTypeMapValue {
     /// Represents a map key value type
     /// Example: `let x: Map (KeyType, (KeyType, ValueType)) = Emp;`
     MapKeyValue(Box<WithMetaData<NodeTypeMapEntry>>),
-    /// Represents a map value paranthesized type
+    /// Represents a map value parenthesized type
     /// Example: `let x: Map (KeyType, (ValueType)) = Emp;`
-    MapValueParanthesizedType(Box<WithMetaData<NodeTypeMapValueAllowingTypeArguments>>),
+    MapValueParenthesizedType(Box<WithMetaData<NodeTypeMapValueAllowingTypeArguments>>),
     /// Represents a map value address type
     /// Example: `let x: Map (KeyType, ByStr20) = Emp;`
     MapValueAddressType(Box<WithMetaData<NodeAddressType>>),

@@ -10,7 +10,6 @@ documentation = "https://docs.rs/scilla-parser"
 
 [dependencies]
 lalrpop-util = "0.20.0"
-lexpr = "0.2.7"
 regex = "1.10.2"
 thiserror = "1.0.50"
 

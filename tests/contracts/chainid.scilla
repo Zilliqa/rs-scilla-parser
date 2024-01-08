@@ -5,6 +5,7 @@ scilla_version 0
 (***************************************************)
 
 contract ChainId()
+field dummy_field : Uint256 = Uint256 0
 
 transition EventChainID ()
   cid <-& CHAINID;

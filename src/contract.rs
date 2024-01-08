@@ -1,8 +1,12 @@
 use std::{path::Path, str::FromStr};
 
-use crate::{run_scilla_fmt, Error, FieldList, TransitionList};
+use crate::{
+    parser::{lexer::Lexer, parser},
+    simplified_representation::emitter::SrEmitter,
+    Error, FieldList, TransitionList,
+};
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Default)]
 /// The `Contract` struct represents a parsed contract in Rust, including its name, initialization
 /// parameters, fields, and transitions.
 pub struct Contract {
@@ -23,15 +27,16 @@ impl FromStr for Contract {
     /// # Example
     /// ```
     /// use std::{error::Error, path::PathBuf};
-    /// use scilla_parser::{run_scilla_fmt, Contract, Field, FieldList, Transition, TransitionList, Type};
-    /// let contract = run_scilla_fmt(&PathBuf::from("tests/contracts/chainid.scilla")).unwrap();
+    /// use scilla_parser::{Contract, Field, FieldList, Transition, TransitionList, Type};
+    /// let contract_path = PathBuf::from("tests/contracts/chainid.scilla");
+    /// let contract_str = include_str!("../tests/contracts/chainid.scilla");
+    /// let contract = contract_str.parse::<Contract>().unwrap();
     ///
-    /// let contract = contract.parse::<Contract>().unwrap();
     /// assert_eq!(
     ///     contract,
     ///     Contract {
     ///         name: "ChainId".to_string(),
-    ///         fields: FieldList::default(),
+    ///         fields: FieldList(vec![Field::new("dummy_field", Type::Uint256)]),
     ///         init_params: FieldList::default(),
     ///         transitions: TransitionList(vec![Transition::new(
     ///             "EventChainID",
@@ -40,19 +45,12 @@ impl FromStr for Contract {
     ///     }
     /// );
     /// ```
-    fn from_str(sexp: &str) -> Result<Self, Self::Err> {
-        // Bug in lexpr crate requires escaping backslashes
-        let v = lexpr::from_str(&sexp.replace("\\", ""))?;
-        let name = v["contr"][0]["cname"]["Ident"][0][1].to_string();
-        let transitions = (&v["contr"][0]["ccomps"][0]).try_into()?;
-        let init_params = (&v["contr"][0]["cparams"][0]).try_into()?;
-        let fields = (&v["contr"][0]["cfields"][0]).try_into()?;
-        Ok(Contract {
-            name,
-            transitions,
-            init_params,
-            fields,
-        })
+    fn from_str(contract: &str) -> Result<Self, Self::Err> {
+        let mut errors = vec![];
+        let parsed = parser::ProgramParser::new().parse(&mut errors, Lexer::new(&contract))?;
+
+        let emitter = SrEmitter::new();
+        emitter.emit(&parsed).map_err(|e| Error::ParseError(e))
     }
 }
 
@@ -65,12 +63,13 @@ impl Contract {
     /// use std::{error::Error, path::PathBuf};
     /// use scilla_parser::{Contract, Field, FieldList, Transition, TransitionList, Type};
     /// let contract_path = PathBuf::from("tests/contracts/chainid.scilla");
-    /// let contract = Contract::from_path(&contract_path).unwrap();
+    /// let contract = Contract::parse(&contract_path).unwrap();
+    ///
     /// assert_eq!(
     ///     contract,
     ///     Contract {
     ///         name: "ChainId".to_string(),
-    ///         fields: FieldList::default(),
+    ///         fields: FieldList(vec![Field::new("dummy_field", Type::Uint256)]),
     ///         init_params: FieldList::default(),
     ///         transitions: TransitionList(vec![Transition::new(
     ///             "EventChainID",
@@ -79,7 +78,7 @@ impl Contract {
     ///     }
     /// );
     /// ```
-    pub fn from_path(contract_path: &Path) -> Result<Self, Error> {
-        run_scilla_fmt(contract_path)?.parse()
+    pub fn parse(contract_path: &Path) -> Result<Self, Error> {
+        std::fs::read_to_string(contract_path)?.parse()
     }
 }
