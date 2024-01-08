@@ -4,35 +4,35 @@ use regex::Regex;
 
 pub type Spanned<Tok, Loc, Error> = Result<(Loc, Tok, Loc), Error>;
 
-const KEYWORD_FORALL: &'static str = "forall";
-const KEYWORD_BUILTIN: &'static str = "builtin";
-const KEYWORD_LIBRARY: &'static str = "library";
-const KEYWORD_IMPORT: &'static str = "import";
-const KEYWORD_LET: &'static str = "let";
-const KEYWORD_IN: &'static str = "in";
-const KEYWORD_MATCH: &'static str = "match";
-const KEYWORD_WITH: &'static str = "with";
-const KEYWORD_END: &'static str = "end";
-const KEYWORD_FUN: &'static str = "fun";
-const KEYWORD_TFUN: &'static str = "tfun";
-const KEYWORD_CONTRACT: &'static str = "contract";
-const KEYWORD_TRANSITION: &'static str = "transition";
-const KEYWORD_SEND: &'static str = "send";
-const KEYWORD_FIELD: &'static str = "field";
-const KEYWORD_ACCEPT: &'static str = "accept";
-const KEYWORD_EXISTS: &'static str = "exists";
-const KEYWORD_DELETE: &'static str = "delete";
-const KEYWORD_THROW: &'static str = "throw";
-const KEYWORD_MAP: &'static str = "Map";
-const KEYWORD_SCILLA_VERSION: &'static str = "scilla_version";
-const KEYWORD_TYPE: &'static str = "type";
-const KEYWORD_OF: &'static str = "of";
-const KEYWORD_AS: &'static str = "as";
-const KEYWORD_PROCEDURE: &'static str = "procedure";
-const KEYWORD_EMP: &'static str = "Emp";
-const KEYWORD_EVENT: &'static str = "event";
-const KEYWORD_EVENT_TYPE: &'static str = "Event";
-const KEYWORD_BYSTR: &'static str = "ByStr";
+const KEYWORD_FORALL: &str = "forall";
+const KEYWORD_BUILTIN: &str = "builtin";
+const KEYWORD_LIBRARY: &str = "library";
+const KEYWORD_IMPORT: &str = "import";
+const KEYWORD_LET: &str = "let";
+const KEYWORD_IN: &str = "in";
+const KEYWORD_MATCH: &str = "match";
+const KEYWORD_WITH: &str = "with";
+const KEYWORD_END: &str = "end";
+const KEYWORD_FUN: &str = "fun";
+const KEYWORD_TFUN: &str = "tfun";
+const KEYWORD_CONTRACT: &str = "contract";
+const KEYWORD_TRANSITION: &str = "transition";
+const KEYWORD_SEND: &str = "send";
+const KEYWORD_FIELD: &str = "field";
+const KEYWORD_ACCEPT: &str = "accept";
+const KEYWORD_EXISTS: &str = "exists";
+const KEYWORD_DELETE: &str = "delete";
+const KEYWORD_THROW: &str = "throw";
+const KEYWORD_MAP: &str = "Map";
+const KEYWORD_SCILLA_VERSION: &str = "scilla_version";
+const KEYWORD_TYPE: &str = "type";
+const KEYWORD_OF: &str = "of";
+const KEYWORD_AS: &str = "as";
+const KEYWORD_PROCEDURE: &str = "procedure";
+const KEYWORD_EMP: &str = "Emp";
+const KEYWORD_EVENT: &str = "event";
+const KEYWORD_EVENT_TYPE: &str = "Event";
+const KEYWORD_BYSTR: &str = "ByStr";
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Token<S> {
@@ -106,16 +106,16 @@ pub enum Token<S> {
 impl<S: ToString> From<Token<S>> for String {
     fn from(token: Token<S>) -> Self {
         match token {
-            Token::ByStrWithSize(value) => format!("{}", value.to_string()),
-            Token::Comment(value) => format!("{}", value.to_string()),
-            Token::Number(value) => format!("{}", value.to_string()),
-            Token::HexNumber(value) => format!("{}", value.to_string()),
-            Token::Identifier(value) => format!("{}", value.to_string()),
-            Token::TemplateIdentifier(value) => format!("{}", value.to_string()),
-            Token::CustomIdentifier(value) => format!("{}", value.to_string()),
-            Token::SpecialIdentifier(value) => format!("{}", value.to_string()),
-            Token::TypeName(value) => format!("{}", value.to_string()),
-            Token::StringLiteral(value) => format!("{}", value.to_string()),
+            Token::ByStrWithSize(value) => value.to_string(),
+            Token::Comment(value) => value.to_string(),
+            Token::Number(value) => value.to_string(),
+            Token::HexNumber(value) => value.to_string(),
+            Token::Identifier(value) => value.to_string(),
+            Token::TemplateIdentifier(value) => value.to_string(),
+            Token::CustomIdentifier(value) => value.to_string(),
+            Token::SpecialIdentifier(value) => value.to_string(),
+            Token::TypeName(value) => value.to_string(),
+            Token::StringLiteral(value) => value.to_string(),
             _ => match token {
                 Token::Plus => "+",
                 Token::Asterisk => "*",
@@ -235,7 +235,7 @@ impl SourcePosition {
         }
     }
     pub fn with_end(&self, new_position: usize) -> Self {
-        let mut ret = self.clone();
+        let mut ret = *self;
         ret.column += new_position - ret.position;
         ret.position = new_position;
         ret

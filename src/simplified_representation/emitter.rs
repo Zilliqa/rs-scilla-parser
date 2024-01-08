@@ -16,19 +16,13 @@ enum StackObject {
 
 /// The `SrEmitter` struct is used for bookkeeping during the conversion of a Scilla AST to a simplified representation.
 /// It implements the `AstConverting` trait, which is a generic trait for AST conversions.
+#[derive(Default)]
 pub struct SrEmitter {
     stack: Vec<StackObject>,
     contract: Contract,
 }
 
 impl SrEmitter {
-    pub fn new() -> Self {
-        SrEmitter {
-            stack: Vec::new(),
-            contract: Contract::default(),
-        }
-    }
-
     fn pop_ir_identifier(&mut self) -> Result<SrIdentifier, String> {
         let ret = if let Some(candidate) = self.stack.pop() {
             match candidate {
@@ -244,7 +238,7 @@ impl AstConverting for SrEmitter {
                 let identifier = self.pop_ir_identifier()?;
                 self.stack
                     .push(StackObject::TypeDefinition(identifier.into()));
-                if args.len() > 0 {
+                if !args.is_empty() {
                     let mut main_type = self.pop_type_definition()?;
                     for arg in args {
                         let _ = arg.visit(self)?;

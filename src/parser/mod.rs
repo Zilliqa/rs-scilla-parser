@@ -1,7 +1,7 @@
 use lalrpop_util::lalrpop_mod;
 
 pub mod lexer;
-lalrpop_mod!(pub parser, "/parser/parser.rs");
+lalrpop_mod!(#[allow(clippy::all)]pub parser, "/parser/parser.rs");
 
 #[derive(Debug)]
 pub struct ParserError {

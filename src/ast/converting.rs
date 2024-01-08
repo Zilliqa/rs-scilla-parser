@@ -9,10 +9,10 @@ use crate::{ast::nodes::*, parser::lexer::SourcePosition};
 /// how to proceed.
 pub trait AstConverting {
     /// Pushes the source position of the current node onto a stack.
-    fn push_source_position(&mut self, start: &SourcePosition, end: &SourcePosition) -> ();
+    fn push_source_position(&mut self, start: &SourcePosition, end: &SourcePosition);
 
     /// Pops the source position of the current node from the stack.
-    fn pop_source_position(&mut self) -> ();
+    fn pop_source_position(&mut self);
 
     /// Converts a `NodeByteStr` node.
     fn emit_byte_str(

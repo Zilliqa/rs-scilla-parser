@@ -17,7 +17,7 @@ pub struct WithMetaData<T> {
 impl<T: fmt::Display> fmt::Display for WithMetaData<T> {
     /// Formats the WithMetaData instance into a string
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{}", self.node.to_string())
+        write!(f, "{}", self.node)
     }
 }
 
@@ -32,18 +32,13 @@ pub enum NodeByteStr {
     Type(WithMetaData<String>),
 }
 
-impl NodeByteStr {
-    /// Converts the NodeByteStr to a string
-    pub fn to_string(&self) -> String {
-        match self {
-            NodeByteStr::Constant(s) => s.node.clone(),
-            NodeByteStr::Type(t) => t.node.clone(),
-        }
-    }
-}
 impl fmt::Display for NodeByteStr {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{}", self.to_string())
+        let str = match self {
+            NodeByteStr::Constant(s) => s.node.clone(),
+            NodeByteStr::Type(t) => t.node.clone(),
+        };
+        write!(f, "{}", str)
     }
 }
 
@@ -61,23 +56,16 @@ pub enum NodeTypeNameIdentifier {
     TypeOrEnumLikeIdentifier(WithMetaData<String>),
 }
 
-impl NodeTypeNameIdentifier {
-    /// Converts the NodeTypeNameIdentifier to a string
-    pub fn to_string(&self) -> String {
-        match self {
-            NodeTypeNameIdentifier::ByteStringType(byte_str) => {
-                format!("{}", byte_str.to_string())
-            }
-            NodeTypeNameIdentifier::EventType => format!("Event"),
+impl fmt::Display for NodeTypeNameIdentifier {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        let str = match self {
+            NodeTypeNameIdentifier::ByteStringType(byte_str) => byte_str.to_string(),
+            NodeTypeNameIdentifier::EventType => "Event".to_string(),
             NodeTypeNameIdentifier::TypeOrEnumLikeIdentifier(custom_type) => {
                 format!("{}", custom_type.clone())
             }
-        }
-    }
-}
-impl fmt::Display for NodeTypeNameIdentifier {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{}", self.to_string())
+        };
+        write!(f, "{}", str)
     }
 }
 
@@ -121,10 +109,9 @@ pub enum NodeMetaIdentifier {
     ByteString,
 }
 
-impl NodeMetaIdentifier {
-    /// Converts the NodeMetaIdentifier to a string
-    pub fn to_string(&self) -> String {
-        match self {
+impl fmt::Display for NodeMetaIdentifier {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        let str = match self {
             NodeMetaIdentifier::MetaName(name) => {
                 format!("{}", name)
             }
@@ -134,14 +121,9 @@ impl NodeMetaIdentifier {
             NodeMetaIdentifier::MetaNameInHexspace(hexspace, name) => {
                 format!("{}.{}", hexspace, name)
             }
-            NodeMetaIdentifier::ByteString => format!("ByStr"),
-        }
-    }
-}
-
-impl fmt::Display for NodeMetaIdentifier {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{}", self.to_string())
+            NodeMetaIdentifier::ByteString => "ByStr".to_string(),
+        };
+        write!(f, "{}", str)
     }
 }
 
@@ -159,22 +141,16 @@ pub enum NodeVariableIdentifier {
     VariableInNamespace(WithMetaData<NodeTypeNameIdentifier>, WithMetaData<String>),
 }
 
-impl NodeVariableIdentifier {
-    /// Converts the NodeVariableIdentifier to a string
-    pub fn to_string(&self) -> String {
-        match self {
+impl fmt::Display for NodeVariableIdentifier {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        let str = match self {
             NodeVariableIdentifier::VariableName(name) => format!("{}", name),
             NodeVariableIdentifier::SpecialIdentifier(id) => format!("{}", id),
             NodeVariableIdentifier::VariableInNamespace(namespace, var_name) => {
-                format!("{}.{}", namespace.to_string(), var_name)
+                format!("{}.{}", namespace, var_name)
             }
-        }
-    }
-}
-
-impl fmt::Display for NodeVariableIdentifier {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{}", self.to_string())
+        };
+        write!(f, "{}", str)
     }
 }
 
