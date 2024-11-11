@@ -284,14 +284,14 @@ impl AstConverting for SrEmitter {
         _mode: TreeTraversalMode,
         _node: &NodeAddressTypeField,
     ) -> Result<TraversalResult, String> {
-        unimplemented!();
+        Ok(TraversalResult::Continue)
     }
     fn emit_address_type(
         &mut self,
         _mode: TreeTraversalMode,
         _node: &NodeAddressType,
     ) -> Result<TraversalResult, String> {
-        unimplemented!();
+        Ok(TraversalResult::Continue)
     }
 
     fn emit_full_expression(
@@ -609,16 +609,56 @@ impl AstConverting for SrEmitter {
     }
     fn emit_type_map_value_arguments(
         &mut self,
-        _mode: TreeTraversalMode,
-        _node: &NodeTypeMapValueArguments,
+        mode: TreeTraversalMode,
+        node: &NodeTypeMapValueArguments,
     ) -> Result<TraversalResult, String> {
-        unimplemented!();
+        match mode {
+            TreeTraversalMode::Enter => {
+                match node {
+                    NodeTypeMapValueArguments::EnclosedTypeMapValue(_) => todo!(),
+                    NodeTypeMapValueArguments::GenericMapValueArgument(g) => {
+                        g.visit(self)?;
+                        let identifier = self.pop_ir_identifier()?;
+                        self.stack
+                            .push(StackObject::TypeDefinition(identifier.into()));
+                    }
+                    NodeTypeMapValueArguments::MapKeyValueType(_, _) => todo!(),
+                };
+            }
+            TreeTraversalMode::Exit => (),
+        }
+        Ok(TraversalResult::SkipChildren)
     }
     fn emit_type_map_value_allowing_type_arguments(
         &mut self,
-        _mode: TreeTraversalMode,
-        _node: &NodeTypeMapValueAllowingTypeArguments,
+        mode: TreeTraversalMode,
+        node: &NodeTypeMapValueAllowingTypeArguments,
     ) -> Result<TraversalResult, String> {
-        Ok(TraversalResult::Continue)
+        match mode {
+            TreeTraversalMode::Enter => {
+                match node {
+                    NodeTypeMapValueAllowingTypeArguments::TypeMapValueNoArgs(m) => {
+                        m.visit(self)?;
+                    }
+                    NodeTypeMapValueAllowingTypeArguments::TypeMapValueWithArgs(m, args) => {
+                        m.visit(self)?;
+                        let identifier = self.pop_ir_identifier()?;
+                        self.stack
+                            .push(StackObject::TypeDefinition(identifier.into()));
+                        if !args.is_empty() {
+                            let mut main_type = self.pop_type_definition()?;
+                            for arg in args {
+                                let _ = arg.visit(self)?;
+                                let sub_type = self.pop_type_definition()?;
+                                main_type.push_sub_type(sub_type);
+                            }
+                            self.stack.push(StackObject::TypeDefinition(main_type));
+                        }
+                    }
+                };
+            }
+            TreeTraversalMode::Exit => (),
+        }
+        Ok(TraversalResult::SkipChildren)
     }
 }
