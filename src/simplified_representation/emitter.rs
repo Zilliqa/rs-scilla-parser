@@ -177,6 +177,7 @@ impl AstConverting for SrEmitter {
                         let map = SrType {
                             main_type: "Map".to_string(),
                             sub_types: vec![key.into(), value.into()],
+                            address_type: None,
                         };
                         self.stack.push(StackObject::TypeDefinition(map));
                     }
@@ -190,6 +191,7 @@ impl AstConverting for SrEmitter {
                         let map = SrType {
                             main_type: "Map".to_string(),
                             sub_types: vec![key.into(), value],
+                            address_type: None,
                         };
                         self.stack.push(StackObject::TypeDefinition(map));
                     }
@@ -282,16 +284,38 @@ impl AstConverting for SrEmitter {
     fn emit_address_type_field(
         &mut self,
         _mode: TreeTraversalMode,
-        _node: &NodeAddressTypeField,
+        node: &NodeAddressTypeField,
     ) -> Result<TraversalResult, String> {
-        Ok(TraversalResult::Continue)
+        if let NodeVariableIdentifier::VariableName(n) = &node.identifier.node {
+            node.type_name.visit(self)?;
+            let typename = self.pop_type_definition()?;
+            let s = StackObject::VariableDeclaration(Field::new(&n.node, typename.into()));
+            self.stack.push(s);
+        }
+        Ok(TraversalResult::SkipChildren)
     }
     fn emit_address_type(
         &mut self,
         _mode: TreeTraversalMode,
-        _node: &NodeAddressType,
+        node: &NodeAddressType,
     ) -> Result<TraversalResult, String> {
-        Ok(TraversalResult::Continue)
+        node.identifier.visit(self)?;
+        let identifier = self.pop_ir_identifier()?;
+        self.stack
+            .push(StackObject::TypeDefinition(identifier.into()));
+        let mut main_type = self.pop_type_definition()?;
+        let mut fields = vec![];
+        for field in &node.address_fields {
+            field.visit(self)?;
+            let field = self.pop_variable_declaration()?;
+            fields.push(field);
+        }
+        main_type.address_type = Some(AddressType {
+            type_name: node.type_name.node.clone(),
+            fields: FieldList(fields),
+        });
+        self.stack.push(StackObject::TypeDefinition(main_type));
+        Ok(TraversalResult::SkipChildren)
     }
 
     fn emit_full_expression(

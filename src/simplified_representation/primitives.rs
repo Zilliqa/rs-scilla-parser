@@ -1,3 +1,5 @@
+use crate::FieldList;
+
 /// Enum representing the different kinds of identifiers in the simplified representation.
 #[derive(Debug, Clone, PartialEq)]
 pub enum SrIdentifierKind {
@@ -37,9 +39,16 @@ pub struct SrIdentifier {
 }
 
 #[derive(Debug, Clone)]
+pub struct AddressType {
+    pub type_name: String,
+    pub fields: FieldList,
+}
+
+#[derive(Debug, Clone)]
 pub struct SrType {
     pub main_type: String,
     pub sub_types: Vec<SrType>,
+    pub address_type: Option<AddressType>, // For types like `ByStr20 with contract field f1 : t1, field f2 : t2, ... end`
 }
 
 impl SrType {
@@ -53,6 +62,7 @@ impl From<SrIdentifier> for SrType {
         Self {
             main_type: value.unresolved,
             sub_types: vec![],
+            address_type: None,
         }
     }
 }
