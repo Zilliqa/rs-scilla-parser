@@ -1,0 +1,15 @@
+scilla_version 0
+
+contract AllByStrVariants
+  (
+    bystr32 : ByStr32,
+    raw_address: ByStr20,
+    library_address : ByStr20 with library end,
+    contract_address : ByStr20 with contract end,
+    detailed_contract_address :
+      ByStr20 with contract
+        field allowances : Map ByStr20 (Map ByStr20 Uint128),
+        field balances : Map ByStr20 Uint128,
+        field total_supply : Uint128
+        end
+  )

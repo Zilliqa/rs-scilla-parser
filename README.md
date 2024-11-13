@@ -52,28 +52,28 @@ Here is the code to parse [SendZil.scilla](./tests/contracts/SendZil.scilla) con
                 Transition::new(
                     "fundUserWithTag",
                     FieldList(vec![
-                        Field::new("user", Type::ByStr(20)),
+                        Field::new("user", Type::ByStr20),
                         Field::new("amount", Type::Uint128)
                     ])
                 ),
                 Transition::new(
                     "fundUser",
                     FieldList(vec![
-                        Field::new("user", Type::ByStr(20)),
+                        Field::new("user", Type::ByStr20),
                         Field::new("amount", Type::Uint128)
                     ])
                 ),
                 Transition::new(
                     "fundContract",
                     FieldList(vec![
-                        Field::new("contract_address", Type::ByStr(20)),
+                        Field::new("contract_address", Type::ByStr20),
                         Field::new("amount", Type::Uint128)
                     ])
                 ),
                 Transition::new(
                     "callOtherContract",
                     FieldList(vec![
-                        Field::new("contract_address", Type::ByStr(20)),
+                        Field::new("contract_address", Type::ByStr20),
                         Field::new("tag", Type::String),
                         Field::new("value", Type::Uint256)
                     ])
