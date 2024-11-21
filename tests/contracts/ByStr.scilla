@@ -13,3 +13,7 @@ contract AllByStrVariants
         field total_supply : Uint128
         end
   )
+
+transition ArbitrageFromXCAD
+  (token : ByStr20 with contract field balances : Map ByStr20 Uint128 end)
+end

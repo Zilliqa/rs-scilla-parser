@@ -283,38 +283,48 @@ impl AstConverting for SrEmitter {
     }
     fn emit_address_type_field(
         &mut self,
-        _mode: TreeTraversalMode,
+        mode: TreeTraversalMode,
         node: &NodeAddressTypeField,
     ) -> Result<TraversalResult, String> {
-        if let NodeVariableIdentifier::VariableName(n) = &node.identifier.node {
-            node.type_name.visit(self)?;
-            let typename = self.pop_type_definition()?;
-            let s = StackObject::VariableDeclaration(Field::new(&n.node, typename.into()));
-            self.stack.push(s);
+        match mode {
+            TreeTraversalMode::Enter => {
+                if let NodeVariableIdentifier::VariableName(n) = &node.identifier.node {
+                    node.type_name.visit(self)?;
+                    let typename = self.pop_type_definition()?;
+                    let s = StackObject::VariableDeclaration(Field::new(&n.node, typename.into()));
+                    self.stack.push(s);
+                }
+            }
+            TreeTraversalMode::Exit => (),
         }
         Ok(TraversalResult::SkipChildren)
     }
     fn emit_address_type(
         &mut self,
-        _mode: TreeTraversalMode,
+        mode: TreeTraversalMode,
         node: &NodeAddressType,
     ) -> Result<TraversalResult, String> {
-        node.identifier.visit(self)?;
-        let identifier = self.pop_ir_identifier()?;
-        self.stack
-            .push(StackObject::TypeDefinition(identifier.into()));
-        let mut main_type = self.pop_type_definition()?;
-        let mut fields = vec![];
-        for field in &node.address_fields {
-            field.visit(self)?;
-            let field = self.pop_variable_declaration()?;
-            fields.push(field);
+        match mode {
+            TreeTraversalMode::Enter => {
+                node.identifier.visit(self)?;
+                let identifier = self.pop_ir_identifier()?;
+                self.stack
+                    .push(StackObject::TypeDefinition(identifier.into()));
+                let mut main_type = self.pop_type_definition()?;
+                let mut fields = vec![];
+                for field in &node.address_fields {
+                    field.visit(self)?;
+                    let field = self.pop_variable_declaration()?;
+                    fields.push(field);
+                }
+                main_type.address_type = Some(AddressType {
+                    type_name: node.type_name.node.clone(),
+                    fields: FieldList(fields),
+                });
+                self.stack.push(StackObject::TypeDefinition(main_type));
+            }
+            TreeTraversalMode::Exit => (),
         }
-        main_type.address_type = Some(AddressType {
-            type_name: node.type_name.node.clone(),
-            fields: FieldList(fields),
-        });
-        self.stack.push(StackObject::TypeDefinition(main_type));
         Ok(TraversalResult::SkipChildren)
     }
 

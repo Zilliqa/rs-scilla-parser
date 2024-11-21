@@ -67,7 +67,19 @@ fn test_bystr_contract_parse() {
                 )
             ]),
             fields: FieldList::default(),
-            transitions: TransitionList::default(),
+            transitions: TransitionList(vec![Transition::new(
+                "ArbitrageFromXCAD",
+                FieldList(vec![Field::new(
+                    "token",
+                    Type::ByStr20With {
+                        type_name: "contract".to_string(),
+                        fields: FieldList(vec![Field::new(
+                            "balances",
+                            Type::Map(Box::new(Type::ByStr20), Box::new(Type::Uint128))
+                        ),],),
+                    },
+                )]),
+            )])
         }
     );
 }
