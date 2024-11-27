@@ -2,6 +2,7 @@ scilla_version 0
 
 contract AllByStrVariants
   (
+    bystr : ByStr,
     bystr32 : ByStr32,
     raw_address: ByStr20,
     library_address : ByStr20 with library end,

@@ -85,7 +85,6 @@ impl From<SrType> for Type {
             "Uint256" => Type::Uint256,
             "String" => Type::String,
             "ByStr" => Type::ByStr,
-            "ByStrX" => todo!(),
             "BNum" => Type::BNum,
             "Bool" => Type::Bool,
             // TODO: Remove unwrap
