@@ -131,9 +131,16 @@ impl AstConverting for SrEmitter {
     fn emit_meta_identifier(
         &mut self,
         _mode: TreeTraversalMode,
-        _node: &NodeMetaIdentifier,
+        node: &NodeMetaIdentifier,
     ) -> Result<TraversalResult, String> {
-        Ok(TraversalResult::Continue)
+        match node {
+            NodeMetaIdentifier::ByteString => {
+                let symbol = SrIdentifier::new("ByStr".to_string(), SrIdentifierKind::Unknown);
+                self.stack.push(StackObject::IrIdentifier(symbol));
+                Ok(TraversalResult::SkipChildren)
+            }
+            _ => Ok(TraversalResult::Continue),
+        }
     }
     fn emit_variable_identifier(
         &mut self,

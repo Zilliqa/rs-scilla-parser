@@ -26,6 +26,7 @@ fn test_bystr_contract_parse() {
         Contract {
             name: "AllByStrVariants".to_string(),
             init_params: FieldList(vec![
+                Field::new("bystr", Type::ByStr),
                 Field::new("bystr32", Type::ByStrX(32)),
                 Field::new("raw_address", Type::ByStr20),
                 Field::new(
