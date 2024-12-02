@@ -65,6 +65,56 @@ fn test_bystr_contract_parse() {
                             Field::new("total_supply", Type::Uint128)
                         ])
                     }
+                ),
+                Field::new(
+                    "complex_contract_address",
+                    Type::ByStr20With {
+                        type_name: "contract".to_string(),
+                        fields: FieldList(vec![
+                            Field::new(
+                                "implementation",
+                                Type::ByStr20With {
+                                    type_name: "contract".to_string(),
+                                    fields: FieldList(vec![
+                                        Field::new(
+                                            "services",
+                                            Type::Map(
+                                                Box::new(Type::String),
+                                                Box::new(Type::ByStr20)
+                                            )
+                                        ),
+                                        Field::new(
+                                            "utility",
+                                            Type::Map(
+                                                Box::new(Type::String),
+                                                Box::new(Type::Uint128)
+                                            )
+                                        ),
+                                    ])
+                                }
+                            ),
+                            Field::new(
+                                "dns",
+                                Type::Map(Box::new(Type::String), Box::new(Type::ByStr20))
+                            ),
+                            Field::new(
+                                "guardians",
+                                Type::Map(
+                                    Box::new(Type::String),
+                                    Box::new(Type::ByStr20With {
+                                        type_name: "contract".to_string(),
+                                        fields: FieldList(vec![Field::new(
+                                            "verification_methods",
+                                            Type::Map(
+                                                Box::new(Type::String),
+                                                Box::new(Type::ByStrX(33))
+                                            )
+                                        ),])
+                                    }),
+                                )
+                            )
+                        ])
+                    }
                 )
             ]),
             fields: FieldList::default(),

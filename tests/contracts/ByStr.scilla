@@ -12,7 +12,13 @@ contract AllByStrVariants
         field allowances : Map ByStr20 (Map ByStr20 Uint128),
         field balances : Map ByStr20 Uint128,
         field total_supply : Uint128
-        end
+        end,
+    complex_contract_address: ByStr20 with contract
+      field implementation: ByStr20 with contract
+        field services: Map String ByStr20,
+        field utility: Map String Uint128 end,
+      field dns: Map String ByStr20,
+      field guardians: Map String ByStr20 with contract field verification_methods: Map String ByStr33 end end
   )
 
 transition ArbitrageFromXCAD
