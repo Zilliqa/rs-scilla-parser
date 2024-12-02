@@ -202,7 +202,17 @@ impl AstConverting for SrEmitter {
                         };
                         self.stack.push(StackObject::TypeDefinition(map));
                     }
-                    NodeTypeMapValue::MapValueAddressType(_value) => unimplemented!(),
+                    NodeTypeMapValue::MapValueAddressType(value) => {
+                        value.visit(self)?;
+                        let value = self.pop_type_definition()?;
+                        let key = self.pop_ir_identifier()?;
+                        let map = SrType {
+                            main_type: "Map".to_string(),
+                            sub_types: vec![key.into(), value],
+                            address_type: None,
+                        };
+                        self.stack.push(StackObject::TypeDefinition(map));
+                    }
                 };
             }
             TreeTraversalMode::Exit => {}
