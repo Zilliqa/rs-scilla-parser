@@ -118,19 +118,39 @@ fn test_bystr_contract_parse() {
                 )
             ]),
             fields: FieldList::default(),
-            transitions: TransitionList(vec![Transition::new(
-                "ArbitrageFromXCAD",
-                FieldList(vec![Field::new(
-                    "token",
-                    Type::ByStr20With {
-                        type_name: "contract".to_string(),
-                        fields: FieldList(vec![Field::new(
-                            "balances",
-                            Type::Map(Box::new(Type::ByStr20), Box::new(Type::Uint128))
-                        ),],),
-                    },
-                )]),
-            )])
+            transitions: TransitionList(vec![
+                Transition::new(
+                    "ArbitrageFromXCAD",
+                    FieldList(vec![Field::new(
+                        "token",
+                        Type::ByStr20With {
+                            type_name: "contract".to_string(),
+                            fields: FieldList(vec![Field::new(
+                                "balances",
+                                Type::Map(Box::new(Type::ByStr20), Box::new(Type::Uint128))
+                            ),],),
+                        },
+                    )]),
+                ),
+                Transition::new(
+                    "BuyNFTUsername",
+                    FieldList(vec![
+                        Field::new("username", Type::String),
+                        Field::new(
+                            "guardianship",
+                            Type::Option(Box::new(Type::ByStr20With {
+                                type_name: "contract".to_string(),
+                                fields: FieldList(vec![Field::new(
+                                    "verification_methods",
+                                    Type::Map(Box::new(Type::String), Box::new(Type::ByStrX(33)))
+                                )])
+                            }))
+                        ),
+                        Field::new("id", Type::String),
+                        Field::new("tyron", Type::Option(Box::new(Type::Uint128))),
+                    ])
+                )
+            ])
         }
     );
 }
