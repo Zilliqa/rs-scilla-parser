@@ -237,8 +237,8 @@ impl AstConverting for SrEmitter {
             NodeTypeArgument::TemplateTypeArgument(_) => {
                 unimplemented!();
             }
-            NodeTypeArgument::AddressTypeArgument(_) => {
-                unimplemented!();
+            NodeTypeArgument::AddressTypeArgument(n) => {
+                n.visit(self)?;
             }
             NodeTypeArgument::MapTypeArgument(_, _) => {
                 unimplemented!();
