@@ -167,6 +167,9 @@ impl AstConverting for SrEmitter {
             NodeTypeMapKey::EnclosedAddressMapKeyType(key) => key.visit(self)?,
             NodeTypeMapKey::AddressMapKeyType(key) => key.visit(self)?,
         };
+        let identifier = self.pop_ir_identifier()?;
+        self.stack
+            .push(StackObject::TypeDefinition(identifier.into()));
         Ok(TraversalResult::SkipChildren)
     }
     fn emit_type_map_value(
@@ -179,39 +182,26 @@ impl AstConverting for SrEmitter {
                 match node {
                     NodeTypeMapValue::MapValueTypeOrEnumLikeIdentifier(value) => {
                         value.visit(self)?;
-                        let value = self.pop_ir_identifier()?;
-                        let key = self.pop_ir_identifier()?;
-                        let map = SrType {
-                            main_type: "Map".to_string(),
-                            sub_types: vec![key.into(), value.into()],
-                            address_type: None,
-                        };
-                        self.stack.push(StackObject::TypeDefinition(map));
+                        let identifier = self.pop_ir_identifier()?;
+                        self.stack
+                            .push(StackObject::TypeDefinition(identifier.into()));
                     }
                     NodeTypeMapValue::MapKeyValue(value) => {
                         value.visit(self)?;
+                        let value = self.pop_type_definition()?;
+                        let key = self.pop_type_definition()?;
+                        let map = SrType {
+                            main_type: "Map".to_string(),
+                            sub_types: vec![key, value],
+                            address_type: None,
+                        };
+                        self.stack.push(StackObject::TypeDefinition(map));
                     }
                     NodeTypeMapValue::MapValueParenthesizedType(value) => {
                         value.visit(self)?;
-                        let value = self.pop_type_definition()?;
-                        let key = self.pop_ir_identifier()?;
-                        let map = SrType {
-                            main_type: "Map".to_string(),
-                            sub_types: vec![key.into(), value],
-                            address_type: None,
-                        };
-                        self.stack.push(StackObject::TypeDefinition(map));
                     }
                     NodeTypeMapValue::MapValueAddressType(value) => {
                         value.visit(self)?;
-                        let value = self.pop_type_definition()?;
-                        let key = self.pop_ir_identifier()?;
-                        let map = SrType {
-                            main_type: "Map".to_string(),
-                            sub_types: vec![key.into(), value],
-                            address_type: None,
-                        };
-                        self.stack.push(StackObject::TypeDefinition(map));
                     }
                 };
             }
@@ -270,6 +260,14 @@ impl AstConverting for SrEmitter {
             NodeScillaType::MapType(key, value) => {
                 let _ = key.visit(self)?;
                 let _ = value.visit(self)?;
+                let value = self.pop_type_definition()?;
+                let key = self.pop_type_definition()?;
+                let map = SrType {
+                    main_type: "Map".to_string(),
+                    sub_types: vec![key, value],
+                    address_type: None,
+                };
+                self.stack.push(StackObject::TypeDefinition(map));
             }
             NodeScillaType::FunctionType(_a, _b) => {
                 unimplemented!()
@@ -666,7 +664,9 @@ impl AstConverting for SrEmitter {
         match mode {
             TreeTraversalMode::Enter => {
                 match node {
-                    NodeTypeMapValueArguments::EnclosedTypeMapValue(_) => todo!(),
+                    NodeTypeMapValueArguments::EnclosedTypeMapValue(n) => {
+                        n.visit(self)?;
+                    }
                     NodeTypeMapValueArguments::GenericMapValueArgument(g) => {
                         g.visit(self)?;
                         let identifier = self.pop_ir_identifier()?;
