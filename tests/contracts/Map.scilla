@@ -1,0 +1,10 @@
+scilla_version 0
+contract DifferentMaps
+()
+
+field first_map: Map String BNum
+                  = Emp String BNum
+field status3days: Map String (Pair (ByStr20) (BNum))
+                  = Emp String (Pair (ByStr20) (BNum))
+field reward_pairs : Map ByStr20 (List Uint128)
+                  = Emp (ByStr20) (List Uint128)

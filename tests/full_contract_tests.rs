@@ -17,6 +17,40 @@ fn test_parse() -> Result<(), Box<dyn Error>> {
 }
 
 #[test]
+fn test_map_contract_parse() {
+    let contract_path = PathBuf::from("tests/contracts/Map.scilla");
+    let contract = Contract::parse(&contract_path).unwrap();
+    assert_eq!(
+        contract,
+        Contract {
+            name: "DifferentMaps".to_string(),
+            init_params: FieldList::default(),
+            fields: FieldList(vec![
+                Field::new(
+                    "first_map",
+                    Type::Map(Box::new(Type::String), Box::new(Type::BNum))
+                ),
+                Field::new(
+                    "status3days",
+                    Type::Map(
+                        Box::new(Type::String),
+                        Box::new(Type::Pair(Box::new(Type::ByStr20), Box::new(Type::BNum)))
+                    )
+                ),
+                Field::new(
+                    "reward_pairs",
+                    Type::Map(
+                        Box::new(Type::ByStr20),
+                        Box::new(Type::List(Box::new(Type::Uint128)))
+                    )
+                )
+            ]),
+            transitions: TransitionList::default()
+        }
+    );
+}
+
+#[test]
 fn test_bystr_contract_parse() {
     let contract_path = PathBuf::from("tests/contracts/ByStr.scilla");
     let contract = Contract::parse(&contract_path).unwrap();
