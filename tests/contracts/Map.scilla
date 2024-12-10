@@ -8,3 +8,4 @@ field status3days: Map String (Pair (ByStr20) (BNum))
                   = Emp String (Pair (ByStr20) (BNum))
 field reward_pairs : Map ByStr20 (List Uint128)
                   = Emp (ByStr20) (List Uint128)
+field user_withdrawal_dict: Option Map BNum Uint128 = None {Map BNum Uint128}
