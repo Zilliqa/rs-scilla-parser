@@ -230,8 +230,17 @@ impl AstConverting for SrEmitter {
             NodeTypeArgument::AddressTypeArgument(n) => {
                 n.visit(self)?;
             }
-            NodeTypeArgument::MapTypeArgument(_, _) => {
-                unimplemented!();
+            NodeTypeArgument::MapTypeArgument(k, v) => {
+                k.visit(self)?;
+                v.visit(self)?;
+                let value = self.pop_type_definition()?;
+                let key = self.pop_type_definition()?;
+                let map = SrType {
+                    main_type: "Map".to_string(),
+                    sub_types: vec![key, value],
+                    address_type: None,
+                };
+                self.stack.push(StackObject::TypeDefinition(map));
             }
         }
         Ok(TraversalResult::SkipChildren)

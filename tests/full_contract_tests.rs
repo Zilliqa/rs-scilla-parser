@@ -43,6 +43,13 @@ fn test_map_contract_parse() {
                         Box::new(Type::ByStr20),
                         Box::new(Type::List(Box::new(Type::Uint128)))
                     )
+                ),
+                Field::new(
+                    "user_withdrawal_dict",
+                    Type::Option(Box::new(Type::Map(
+                        Box::new(Type::BNum),
+                        Box::new(Type::Uint128)
+                    )))
                 )
             ]),
             transitions: TransitionList::default()
